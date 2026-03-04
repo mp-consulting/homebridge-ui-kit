@@ -1,0 +1,20 @@
+/* ── Bootstrap 5 overrides ──────────────────────────────────────────────────
+   Remap Bootstrap components to use brand tokens.
+   ────────────────────────────────────────────────────────────────────────── */
+
+/* Primary button */
+.btn-primary {
+  --bs-btn-bg: var(--mp-primary);
+  --bs-btn-border-color: var(--mp-primary);
+  --bs-btn-hover-bg: var(--mp-primary-hover);
+  --bs-btn-hover-border-color: var(--mp-primary-hover);
+  --bs-btn-active-bg: var(--mp-primary-hover);
+  --bs-btn-active-border-color: var(--mp-primary-hover);
+  --bs-btn-focus-shadow-rgb: var(--mp-primary-rgb);
+}
+
+/* Primary spinner */
+.spinner-border.text-primary,
+.spinner-grow.text-primary {
+  color: var(--mp-primary) !important;
+}

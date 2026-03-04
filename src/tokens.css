@@ -1,0 +1,26 @@
+/* ── Design tokens ──────────────────────────────────────────────────────────
+   CSS custom properties used throughout the design system.
+   Override these in your plugin's styles.css to customize per-plugin.
+   ────────────────────────────────────────────────────────────────────────── */
+
+:root {
+  /* Brand */
+  --mp-primary: #4f46e5;
+  --mp-primary-rgb: 79, 70, 229;
+  --mp-primary-hover: #4338ca;
+  --mp-primary-subtle: rgba(79, 70, 229, 0.12);
+
+  /* Status */
+  --mp-status-online: #10b981;
+  --mp-status-online-glow: rgba(16, 185, 129, 0.35);
+  --mp-status-offline: #ef4444;
+  --mp-status-checking: #94a3b8;
+
+  /* Surfaces */
+  --mp-surface: rgba(255, 255, 255, 0.03);
+  --mp-border: rgba(255, 255, 255, 0.08);
+
+  /* Shape */
+  --mp-radius: 0.5rem;
+  --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+}

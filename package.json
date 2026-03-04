@@ -1,0 +1,18 @@
+{
+  "name": "@mp-consulting/homebridge-ui-kit",
+  "version": "1.0.0",
+  "description": "Brand design system for @mp-consulting Homebridge plugins",
+  "author": "MP Consulting",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mp-consulting/homebridge-ui-kit.git"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "node scripts/build.js"
+  }
+}
