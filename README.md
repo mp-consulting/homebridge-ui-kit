@@ -30,8 +30,8 @@ npm install --save-dev @mp-consulting/homebridge-ui-kit
 }
 ```
 
-> **Important:** Copy into the plugin's `homebridge-ui/public/` root (not a subdirectory).
-> `homebridge-config-ui-x` serves static files from the registered public root only — subdirectories like `public/lib/` are not accessible.
+> **Note:** Copying to the `homebridge-ui/public/` root is the simplest approach and is recommended.
+> `homebridge-config-ui-x` does support subdirectories (it resolves `dirname` dynamically per request), but keeping assets at the root avoids extra path nesting in HTML references.
 
 ### 3. Reference in `index.html`
 
