@@ -11,6 +11,8 @@
   --bs-btn-active-bg: var(--mp-primary-hover);
   --bs-btn-active-border-color: var(--mp-primary-hover);
   --bs-btn-focus-shadow-rgb: var(--mp-primary-rgb);
+  --bs-btn-disabled-bg: var(--mp-primary);
+  --bs-btn-disabled-border-color: var(--mp-primary);
 }
 
 /* Primary spinner */

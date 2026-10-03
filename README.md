@@ -52,20 +52,22 @@ The plugin's `homebridge-ui/public/index.html` must be a full HTML document. Loa
       } catch(e) {}
     })();
   </script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
   <link rel="stylesheet" href="kit.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- your UI here -->
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
   <script src="kit.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
 ```
+
+The `integrity` hashes pin the exact CDN files; update them if you change a version (jsDelivr shows the SRI hash for each file).
 
 The early inline script applies `data-bs-theme="dark"` from the system preference before any CSS loads, preventing a flash of wrong theme. In your app script, also apply the Homebridge user's saved theme setting:
 
@@ -90,7 +92,7 @@ homebridge-ui/public/kit.js
 
 ### 5. Update `eslint.config.js`
 
-Add `kit.js` to the ignore list (it is a minified third-party bundle) and expose `MpKit` as a browser global:
+Add `kit.js` to the ignore list (it is a generated, vendored file) and expose `MpKit` as a browser global:
 
 ```js
 export default tseslint.config(
@@ -127,7 +129,17 @@ MpKit.Loading.render('Loading...')
 
 // View switching (.mp-view elements)
 MpKit.View.show('viewId')
+
+// Support footer (only http/https URLs are rendered; icons are inline SVG,
+// so the Bootstrap Icons font is not required)
+MpKit.Footer.render({ github, npm, changelog, target: '.mp-footer' })
+
+// Escape untrusted text before interpolating it into your own HTML
+MpKit.escapeHtml(device.name)
 ```
+
+All text passed to the helpers is HTML-escaped, so it is safe to pass device names or other
+values that came from the network. To include markup, build the element yourself.
 
 ## Dark Mode
 
@@ -137,8 +149,13 @@ Dark mode is handled entirely by Bootstrap's `data-bs-theme="dark"` attribute on
 
 ```bash
 npm install
-npm run build   # outputs to dist/
+npm run build        # outputs to dist/ (commit the result)
+npm run build:check  # fails if dist/ is out of date (run in CI)
+npm test
 ```
+
+Use the `--mp-*` tokens for brand colors. For text in the brand color use `--mp-primary-text`,
+which switches to a lighter shade in dark mode so it keeps WCAG AA contrast.
 
 ## License
 

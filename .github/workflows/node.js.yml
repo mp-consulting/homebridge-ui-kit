@@ -2,6 +2,9 @@ name: Build
 
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,23 +15,18 @@ jobs:
         node-version: [20.x, 22.x, 24.x]
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@fbc6f3992d24b796d5a048ff273f7fcc4a7b6c09 # v5.1.0
 
       - name: Use Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v5
+        uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v5.0.0
         with:
           node-version: ${{ matrix.node-version }}
 
       - name: Install dependencies
-        run: npm install
+        run: npm ci
 
-      - name: Build the project
-        run: npm run build
+      - name: Check dist is up to date
+        run: npm run build:check
 
-      - name: List, audit, fix outdated dependencies and build again
-        run: |
-          npm list --outdated
-          npm audit || true  # ignore failures
-          npm audit fix || true
-          npm list --outdated
-          npm run build
+      - name: Test
+        run: npm test

@@ -72,6 +72,11 @@
   box-shadow: var(--mp-shadow-hover) !important;
 }
 
+.mp-device-card:focus-visible {
+  outline: 2px solid var(--mp-primary);
+  outline-offset: 2px;
+}
+
 /* ── Settings surface card ──────────────────────────────── */
 
 .mp-settings-card {
@@ -134,20 +139,20 @@
 .mp-tabs .nav-link {
   color: var(--bs-secondary-color);
   border: none;
+  border-bottom: 2px solid transparent; /* reserve space so the active tab doesn't shift */
   padding: 0.75rem 1.25rem;
   font-weight: 500;
 }
 
 .mp-tabs .nav-link:hover {
   color: var(--bs-body-color);
-  border: none;
+  border-color: transparent;
 }
 
 .mp-tabs .nav-link.active {
-  color: var(--mp-primary);
+  color: var(--mp-primary-text);
   background: transparent;
-  border: none;
-  border-bottom: 2px solid var(--mp-primary);
+  border-bottom-color: var(--mp-primary);
 }
 
 /* ── Metadata label ─────────────────────────────────────── */
@@ -194,10 +199,34 @@
 }
 
 .mp-footer a:hover {
-  color: var(--mp-primary);
+  color: var(--mp-primary-text);
+}
+
+.mp-footer-icon {
+  width: 1em;
+  height: 1em;
+  flex-shrink: 0;
+  fill: currentColor;
 }
 
 .mp-footer-sep {
   color: var(--mp-border);
   user-select: none;
+}
+
+/* ── Reduced motion ─────────────────────────────────────── */
+
+@media (prefers-reduced-motion: reduce) {
+  .mp-status-checking {
+    animation: none;
+  }
+
+  .mp-device-card,
+  .mp-footer a {
+    transition: none;
+  }
+
+  .mp-device-card:hover {
+    transform: none;
+  }
 }

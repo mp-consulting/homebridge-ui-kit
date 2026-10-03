@@ -2,6 +2,36 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.1.0] - 2026-10-03
+
+### Security
+- All `MpKit` helpers now HTML-escape their text arguments; `Footer.render` only renders `http(s)` URLs and adds `rel="noreferrer"`
+- New `MpKit.escapeHtml()` helper for plugin code
+- README CDN tags now carry SRI `integrity` hashes
+- CI: GitHub Actions pinned to commit SHAs; npm publishing uses trusted publishing (OIDC) instead of a long-lived `NPM_TOKEN`
+
+### Fixed
+- `--mp-surface` / `--mp-border` were white-only and invisible in light mode; they now have light defaults with dark values under `[data-bs-theme="dark"]`
+- Active tab and footer link hover used `--mp-primary` as text color (2.45:1 contrast in dark mode); added `--mp-primary-text` token
+- Active tab no longer grows by 2px when selected
+- Disabled `.btn-primary` showed Bootstrap blue instead of the brand color
+- `dist/kit.js` version header was hardcoded; the build now stamps the package version
+
+### Changed
+- `Footer.render` uses inline SVG icons, so it no longer depends on the Bootstrap Icons font
+
+### Removed
+- Unused `--mp-primary-subtle` token
+- Redundant `.npmignore` (the `files` field already controls the package contents)
+
+### Accessibility
+- Status dots, empty-state icons and footer separators are hidden from screen readers
+- `Loading` exposes a single `role="status"` live region (the spinner was `role="status"` and `aria-hidden` at the same time)
+- Keyboard focus ring for `.mp-device-card`; animations respect `prefers-reduced-motion`
+
+### Development
+- Added a `node:test` suite (`npm test`) and `npm run build:check`; CI runs both with read-only permissions and no longer runs `npm audit fix`
+
 ## [1.0.1] - 2026-07-25
 
 A packaging and documentation release. The built assets are unchanged: `dist/kit.js` is
