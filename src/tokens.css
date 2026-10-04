@@ -26,6 +26,11 @@
   --mp-status-offline: #ef4444;
   --mp-status-checking: #94a3b8;
 
+  /* Accessible text and focus colours (plain values, so they hold contrast
+     whether or not the host switches Bootstrap's variables) */
+  --mp-text-subtle: #5c636a;           /* secondary hints; 6.1:1 on white */
+  --mp-focus-ring: #4f46e5;            /* focus outlines; 6.3:1 on white */
+
   /* Surfaces */
   --mp-surface: rgba(0, 0, 0, 0.02);
   --mp-border: rgba(0, 0, 0, 0.1);
@@ -86,6 +91,8 @@
 [data-bs-theme="dark"],
 .mp-theme-dark {
   --mp-primary-text: #818cf8;
+  --mp-text-subtle: #a3a9b0;           /* 6.5:1 on #212529 */
+  --mp-focus-ring: #818cf8;            /* 5.2:1 on #212529 (the brand indigo is 2.5:1) */
   --mp-surface: rgba(255, 255, 255, 0.03);
   --mp-border: rgba(255, 255, 255, 0.08);
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);

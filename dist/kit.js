@@ -43,10 +43,48 @@
     }
     return err && err.message || fallback;
   }
+  var liveRegion = null;
+  function announce(message, politeness) {
+    const d = doc();
+    if (!d || !d.body || typeof d.createElement !== "function") {
+      return;
+    }
+    if (!liveRegion || !liveRegion.isConnected) {
+      liveRegion = d.createElement("div");
+      liveRegion.className = "mp-sr-only";
+      liveRegion.setAttribute("data-mp-live", "");
+      liveRegion.setAttribute("aria-atomic", "true");
+      d.body.appendChild(liveRegion);
+    }
+    liveRegion.setAttribute("aria-live", politeness === "assertive" ? "assertive" : "polite");
+    liveRegion.textContent = "";
+    const text = String(message == null ? "" : message);
+    setTimeout(() => {
+      liveRegion.textContent = text;
+    }, 30);
+  }
+  var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  function focusElement(el) {
+    if (!el || typeof el.focus !== "function") {
+      return;
+    }
+    if (!el.matches(FOCUSABLE) && !el.hasAttribute("tabindex")) {
+      el.setAttribute("tabindex", "-1");
+      el.classList.add("mp-focus-target");
+    }
+    try {
+      el.focus({ preventScroll: true });
+    } catch {
+      el.focus();
+    }
+  }
+  function textOf(el) {
+    return el ? String(el.textContent || "").replace(/\s+/g, " ").trim() : "";
+  }
 
   // src/js/core.js
   function badge(badgeClass, dotClass, label) {
-    return '<span class="badge ' + badgeClass + '">' + (dotClass ? '<span class="mp-status ' + dotClass + ' me-1" aria-hidden="true"></span>' : "") + escapeHtml(label) + "</span>";
+    return '<span class="badge ' + badgeClass + '">' + (dotClass ? '<span class="mp-status ' + dotClass + '" aria-hidden="true"></span>' : "") + escapeHtml(label) + "</span>";
   }
   var FOOTER_LINKS = [
     {
@@ -97,11 +135,38 @@
       return '<div class="mp-loading" role="status" aria-live="polite"><div class="spinner-border spinner-border-sm text-secondary" aria-hidden="true"></div><span>' + escapeHtml(message) + "</span></div>";
     }
   };
+  var HEADING = "h1, h2, h3, h4, h5, h6, [data-mp-focus]";
   var View = {
-    show(id) {
+    show(id, opts) {
+      opts = opts || {};
+      let shown = null;
+      let changed = false;
+      let previous = false;
       doc().querySelectorAll(".mp-view").forEach((v) => {
-        v.classList.toggle("active", v.id === id);
+        const active = v.id === id;
+        const was = v.classList.contains("active");
+        if (active) {
+          shown = v;
+          changed = !was;
+        } else if (was) {
+          previous = true;
+        }
+        v.classList.toggle("active", active);
       });
+      if (!shown || !changed || typeof shown.querySelector !== "function") {
+        return shown;
+      }
+      const heading = shown.querySelector(HEADING);
+      if (opts.focus === void 0 ? previous : opts.focus) {
+        focusElement(heading || shown);
+      }
+      if (opts.announce === void 0 ? previous : opts.announce) {
+        const label = typeof opts.announce === "string" ? opts.announce : shown.getAttribute("aria-label") || textOf(heading);
+        if (label) {
+          announce(label);
+        }
+      }
+      return shown;
     }
   };
   var Footer = {
@@ -282,7 +347,7 @@
   }
   var UL_ITEM = /^\s*[-*+]\s+(.*)$/;
   var OL_ITEM = /^\s*\d+[.)]\s+(.*)$/;
-  var HEADING = /^\s*#{1,6}\s+(.*)$/;
+  var HEADING2 = /^\s*#{1,6}\s+(.*)$/;
   var FENCE = /^\s*(```|~~~)/;
   function markdown(text) {
     var lines = String(text == null ? "" : text).replace(/\r\n?/g, "\n").split("\n");
@@ -322,7 +387,7 @@
         out.push("<" + tag + ">" + items.join("") + "</" + tag + ">");
         continue;
       }
-      var heading = HEADING.exec(line);
+      var heading = HEADING2.exec(line);
       if (heading) {
         flush();
         out.push("<p><strong>" + inlineMarkdown(heading[1]) + "</strong></p>");
@@ -941,16 +1006,168 @@
     fromSettings: themeFromSettings
   };
 
+  // src/js/tabs.js
+  function panelId(tab) {
+    const ref = tab.getAttribute("data-mp-view") || tab.getAttribute("aria-controls") || tab.getAttribute("data-bs-target") || tab.getAttribute("href") || "";
+    const id = ref.charAt(0) === "#" ? ref.slice(1) : ref;
+    return /^[A-Za-z][\w:.-]*$/.test(id) ? id : null;
+  }
+  function isRtl(el) {
+    const holder = el.closest("[dir]");
+    if (holder) {
+      return holder.getAttribute("dir").toLowerCase() === "rtl";
+    }
+    try {
+      const view = el.ownerDocument.defaultView;
+      return view.getComputedStyle(el).direction === "rtl";
+    } catch {
+      return false;
+    }
+  }
+  var Tabs = {
+    /**
+     * Enhances a tab bar. el: .mp-tabs element or selector.
+     * opts: { activation: 'auto' | 'manual', onChange(tab, index, panel) }
+     * Tabs reference their panel with data-mp-view (an .mp-view id, shown with
+     * MpKit.View.show), aria-controls, data-bs-target or href="#id".
+     * Returns { select(indexOrTab), selected(), tabs(), destroy() }.
+     */
+    init(el, opts) {
+      opts = opts || {};
+      const root2 = typeof el === "string" ? doc().querySelector(el) : el;
+      if (!root2) {
+        return null;
+      }
+      const tabs = Array.from(root2.querySelectorAll('.nav-link, [role="tab"]'));
+      const vertical = root2.getAttribute("aria-orientation") === "vertical";
+      root2.setAttribute("role", "tablist");
+      tabs.forEach((tab) => {
+        if (tab.parentElement !== root2 && tab.parentElement.tagName === "LI") {
+          tab.parentElement.setAttribute("role", "presentation");
+        }
+        tab.setAttribute("role", "tab");
+        if (!tab.id) {
+          tab.id = uid("mp-tab");
+        }
+        const id = panelId(tab);
+        const panel = id && root2.ownerDocument.getElementById(id);
+        if (panel) {
+          tab.setAttribute("aria-controls", id);
+          panel.setAttribute("role", "tabpanel");
+          if (!panel.hasAttribute("aria-labelledby")) {
+            panel.setAttribute("aria-labelledby", tab.id);
+          }
+        }
+      });
+      let current = -1;
+      function panelOf(tab) {
+        const id = tab.getAttribute("aria-controls");
+        return id ? root2.ownerDocument.getElementById(id) : null;
+      }
+      function select(target, fromUser) {
+        const index = typeof target === "number" ? target : tabs.indexOf(target);
+        if (index < 0 || index >= tabs.length) {
+          return;
+        }
+        const changed = index !== current;
+        tabs.forEach((tab, i) => {
+          const on = i === index;
+          tab.setAttribute("aria-selected", on ? "true" : "false");
+          tab.setAttribute("tabindex", on ? "0" : "-1");
+          tab.classList.toggle("active", on);
+          const panel2 = panelOf(tab);
+          if (!panel2 || panel2.classList.contains("mp-view")) {
+            return;
+          }
+          if (panel2.classList.contains("tab-pane")) {
+            panel2.classList.toggle("active", on);
+            panel2.classList.toggle("show", on);
+          } else {
+            panel2.hidden = !on;
+          }
+        });
+        const panel = panelOf(tabs[index]);
+        if (panel && panel.classList.contains("mp-view")) {
+          View.show(panel.id, { focus: false, announce: false });
+        }
+        current = index;
+        if (changed && fromUser && typeof opts.onChange === "function") {
+          opts.onChange(tabs[index], index, panel);
+        }
+      }
+      function onClick(ev) {
+        const tab = ev.target.closest('[role="tab"]');
+        if (!tab || !root2.contains(tab)) {
+          return;
+        }
+        if (tab.tagName === "A") {
+          ev.preventDefault();
+        }
+        select(tab, true);
+      }
+      function onKeydown(ev) {
+        const tab = ev.target.closest('[role="tab"]');
+        if (!tab || !root2.contains(tab)) {
+          return;
+        }
+        const enabled = tabs.filter((t) => !t.disabled && t.getAttribute("aria-disabled") !== "true");
+        const pos = enabled.indexOf(tab);
+        const rtl = !vertical && isRtl(root2);
+        const next = vertical ? "ArrowDown" : rtl ? "ArrowLeft" : "ArrowRight";
+        const prev = vertical ? "ArrowUp" : rtl ? "ArrowRight" : "ArrowLeft";
+        let to = null;
+        if (ev.key === next) {
+          to = enabled[(pos + 1) % enabled.length];
+        } else if (ev.key === prev) {
+          to = enabled[(pos - 1 + enabled.length) % enabled.length];
+        } else if (ev.key === "Home") {
+          to = enabled[0];
+        } else if (ev.key === "End") {
+          to = enabled[enabled.length - 1];
+        } else if ((ev.key === "Enter" || ev.key === " ") && opts.activation === "manual") {
+          ev.preventDefault();
+          select(tab, true);
+          return;
+        }
+        if (!to) {
+          return;
+        }
+        ev.preventDefault();
+        if (opts.activation === "manual") {
+          tabs.forEach((t) => t.setAttribute("tabindex", t === to ? "0" : "-1"));
+        } else {
+          select(to, true);
+        }
+        to.focus();
+      }
+      root2.addEventListener("click", onClick);
+      root2.addEventListener("keydown", onKeydown);
+      const initial = tabs.findIndex((t) => t.classList.contains("active") || t.getAttribute("aria-selected") === "true");
+      select(initial < 0 ? 0 : initial, false);
+      return {
+        select: (target) => select(target, true),
+        selected: () => current,
+        tabs: () => tabs.slice(),
+        destroy() {
+          root2.removeEventListener("click", onClick);
+          root2.removeEventListener("keydown", onKeydown);
+        }
+      };
+    }
+  };
+
   // src/js/index.js
   var version = "1.2.2";
   var MpKit = {
     version,
     escapeHtml,
+    announce,
     StatusBadge,
     EmptyState,
     Loading,
     View,
     Footer,
+    Tabs,
     Theme,
     ai
   };

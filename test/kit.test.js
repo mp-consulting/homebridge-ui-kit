@@ -59,7 +59,8 @@ describe('StatusBadge', () => {
   });
 
   test('renders the matching status dot, hidden from screen readers', () => {
-    assert.match(StatusBadge.online(), /mp-status-online me-1" aria-hidden="true"/);
+    assert.match(StatusBadge.online(), /class="mp-status mp-status-online" aria-hidden="true"/);
+    assert.doesNotMatch(StatusBadge.online(), /\bme-1\b/, 'spacing is logical CSS, not a physical utility');
     assert.match(StatusBadge.offline(), /mp-status-offline/);
     assert.match(StatusBadge.checking(), /mp-status-checking/);
     assert.doesNotMatch(StatusBadge.disabled(), /mp-status/);

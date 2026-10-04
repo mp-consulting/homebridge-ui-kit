@@ -14,6 +14,9 @@ All notable changes to this project will be documented in this file.
 - **`.mp-theme-dark` class**: the dark `--mp-*` tokens now also apply under this selector-agnostic class, so hosts whose dark mode is not Bootstrap's `data-bs-theme` (e.g. Glass UI's `body.dark-mode`) can opt in without copying hex values. Under the class alone the host colours (`--mp-ai-surface`, `--mp-ai-fg`, …) are plain Bootstrap-dark values; with `data-bs-theme="dark"` they keep following Bootstrap's variables. The kit's CSS stays unlayered on purpose (a `@layer` would let unlayered Bootstrap override the kit's remaps).
 
 - **Assistant request cancellation.** `MpKit.ai.ask/explain/config` accept `opts.signal` (an `AbortSignal`) and return a promise with `.cancel()` and `.requestId`. Cancelling rejects with an `AbortError`, removes the event listeners (late chunks are ignored) and sends a best-effort `/ai/cancel` request (`notifyServer: false` skips it; failures are ignored). `renderChat()` gains `cancel()` and passes `ctx.signal` to a custom `onSend`.
+- **`MpKit.Tabs.init()`**: roles, `aria-selected`, roving `tabindex`, Arrow/Home/End keys (mirrored in RTL), automatic or manual activation; panels from `data-mp-view`, `aria-controls`, `data-bs-target` or `href`.
+- **`MpKit.announce(message, politeness)`** and the `.mp-sr-only` utility.
+- Tokens `--mp-text-subtle` and `--mp-focus-ring`.
 - **`mp-ui-kit-copy --only <files>`** copies only the named dist files (comma-separated or repeated); unknown names fail with the list of available files.
 
 ### Changed
@@ -22,6 +25,17 @@ All notable changes to this project will be documented in this file.
 - **Double-load warning.** `kit.css` already contains `ai.css`; `mp-ui-kit-copy` now warns when an `.html` page next to the destination folder links both (as homebridge-ai-kit's UI did), and the README and `--help` say to load only one.
 
 - **README: local files are the default install.** The Homebridge UI's content-security policy only allows same-origin scripts and styles, so the integration guide now installs Bootstrap as a dev dependency, copies it with `mp-ui-kit-copy --vendor` and references `lib/` paths; the CDN tags moved into a note for use outside Homebridge.
+
+### Accessibility
+
+- `MpKit.View.show()` moves focus to the shown view's heading (or `[data-mp-focus]`, or the view) and announces it through a polite live region when switching from another view; the first show on page load does neither. Options `{ focus, announce }`.
+- `.mp-empty-state-hint` used `opacity: 0.7` on the secondary colour (3.3:1 on white); it now uses `--mp-text-subtle` (6.1:1 light, 6.5:1 dark).
+- Focus rings (`.mp-device-card`, tabs, new components) use `--mp-focus-ring`; the brand indigo outline was 2.5:1 on the dark background.
+
+### RTL
+
+- `ai.css` and `components.css` use logical properties instead of `margin/padding-left/right` and physical corner radii; code blocks and diffs stay LTR.
+- `StatusBadge` no longer adds Bootstrap's physical `me-1` utility (which stays `margin-right` with the LTR Bootstrap build); the dot spacing is `margin-inline-end` in the kit CSS.
 
 ### Development
 

@@ -181,8 +181,21 @@ MpKit.EmptyState.render({ iconClass, title, hint })
 // Loading placeholder
 MpKit.Loading.render('Loading...')
 
-// View switching (.mp-view elements)
+// View switching (.mp-view elements). When switching from another view, focus
+// moves to the new view's heading (or [data-mp-focus], or the view) and its
+// aria-label / heading is announced politely. Returns the shown element.
 MpKit.View.show('viewId')
+MpKit.View.show('viewId', { focus: false, announce: 'Custom message' })
+
+// Accessible tabs for a .mp-tabs nav: roles, aria-selected, roving tabindex,
+// Arrow keys / Home / End (mirrored in RTL). Panels come from data-mp-view
+// (an .mp-view id), aria-controls, data-bs-target or href="#id".
+const tabs = MpKit.Tabs.init('#tabs', { activation: 'auto', onChange: (tab, index, panel) => {} });
+tabs.select(1);
+
+// Screen-reader announcement through a shared, visually hidden live region
+MpKit.announce('Settings saved');          // polite
+MpKit.announce('Connection lost', 'assertive');
 
 // Support footer (only http/https URLs are rendered; icons are inline SVG,
 // so the Bootstrap Icons font is not required)
@@ -194,6 +207,15 @@ MpKit.escapeHtml(device.name)
 
 All text passed to the helpers is HTML-escaped, so it is safe to pass device names or other
 values that came from the network. To include markup, build the element yourself.
+
+### Accessibility and RTL
+
+- `--mp-text-subtle` (secondary hints, ≥ 6:1 in both themes) and `--mp-focus-ring` (focus outlines;
+  the brand indigo in light mode, `#818cf8` in dark mode where the indigo is only 2.5:1) are the
+  contrast-safe tokens the components use. `.mp-sr-only` hides content visually only.
+- The component styles use logical properties (`margin-inline-start`, `padding-inline-end`, …), so
+  `dir="rtl"` pages lay out correctly with the regular (LTR) Bootstrap build. Code blocks and diffs
+  stay left-to-right.
 
 ## Assistant (AI)
 

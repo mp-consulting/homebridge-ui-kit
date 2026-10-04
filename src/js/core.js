@@ -1,11 +1,13 @@
 // Core helpers: status badges, empty/loading states, view switching, footer.
 
 import { doc } from './env.js';
-import { escapeHtml, safeUrl, toElement } from './util.js';
+import {
+  announce, escapeHtml, focusElement, safeUrl, textOf, toElement,
+} from './util.js';
 
 function badge(badgeClass, dotClass, label) {
   return '<span class="badge ' + badgeClass + '">'
-    + (dotClass ? '<span class="mp-status ' + dotClass + ' me-1" aria-hidden="true"></span>' : '')
+    + (dotClass ? '<span class="mp-status ' + dotClass + '" aria-hidden="true"></span>' : '')
     + escapeHtml(label) + '</span>';
 }
 
@@ -80,12 +82,42 @@ export const Loading = {
   },
 };
 
-/** View — shows one .mp-view element and hides the others. */
+const HEADING = 'h1, h2, h3, h4, h5, h6, [data-mp-focus]';
+
+/**
+ * View — shows one .mp-view element and hides the others. When it switches
+ * from another view, focus moves to the new view's heading (or its
+ * [data-mp-focus] element, or the view itself) and its name is announced
+ * through a polite live region. The first show (no view was active) does
+ * neither, so page load does not steal focus.
+ * opts: { focus, announce (true/false, or a custom message for announce) }
+ */
 export const View = {
-  show(id) {
+  show(id, opts) {
+    opts = opts || {};
+    let shown = null;
+    let changed = false;
+    let previous = false;
     doc().querySelectorAll('.mp-view').forEach(v => {
-      v.classList.toggle('active', v.id === id);
+      const active = v.id === id;
+      const was = v.classList.contains('active');
+      if (active) {
+        shown = v;
+        changed = !was;
+      } else if (was) {
+        previous = true;
+      }
+      v.classList.toggle('active', active);
     });
+    if (!shown || !changed || typeof shown.querySelector !== 'function') { return shown; }
+    const heading = shown.querySelector(HEADING);
+    if (opts.focus === undefined ? previous : opts.focus) { focusElement(heading || shown); }
+    if (opts.announce === undefined ? previous : opts.announce) {
+      const label = typeof opts.announce === 'string' ? opts.announce
+        : (shown.getAttribute('aria-label') || textOf(heading));
+      if (label) { announce(label); }
+    }
+    return shown;
   },
 };
 

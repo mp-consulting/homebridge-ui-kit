@@ -41,6 +41,12 @@
   vertical-align: middle;
 }
 
+/* Spacing between a status dot and its badge label (logical, so RTL works
+   without Bootstrap's RTL build). */
+.badge > .mp-status {
+  margin-inline-end: 0.25rem;
+}
+
 .mp-status-online {
   background-color: var(--mp-status-online);
   box-shadow: 0 0 5px var(--mp-status-online-glow);
@@ -73,7 +79,7 @@
 }
 
 .mp-device-card:focus-visible {
-  outline: 2px solid var(--mp-primary);
+  outline: 2px solid var(--mp-focus-ring);
   outline-offset: 2px;
 }
 
@@ -110,11 +116,11 @@
   margin: 0 0 0.25rem;
 }
 
+/* A token instead of opacity: the old 0.7 opacity dropped it to 3.3:1. */
 .mp-empty-state-hint {
   font-size: 0.8125rem;
-  color: var(--bs-secondary-color);
+  color: var(--mp-text-subtle);
   margin: 0;
-  opacity: 0.7;
 }
 
 /* ── Loading state ──────────────────────────────────────── */
@@ -149,10 +155,17 @@
   border-color: transparent;
 }
 
-.mp-tabs .nav-link.active {
+.mp-tabs .nav-link.active,
+.mp-tabs .nav-link[aria-selected="true"] {
   color: var(--mp-primary-text);
   background: transparent;
   border-bottom-color: var(--mp-primary);
+}
+
+.mp-tabs .nav-link:focus-visible {
+  outline: 2px solid var(--mp-focus-ring);
+  outline-offset: -2px;
+  box-shadow: none;
 }
 
 /* ── Metadata label ─────────────────────────────────────── */
@@ -172,6 +185,26 @@
 
 .mp-view.active {
   display: block;
+}
+
+/* View.show() moves focus to the view's heading (tabindex="-1"); a
+   programmatic focus target needs no ring. */
+.mp-focus-target:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ── Screen-reader only ─────────────────────────────────── */
+
+.mp-sr-only {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
 }
 
 /* ── Support footer ─────────────────────────────────────── */

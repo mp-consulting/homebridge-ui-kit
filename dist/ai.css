@@ -28,6 +28,11 @@
   --mp-status-offline: #ef4444;
   --mp-status-checking: #94a3b8;
 
+  /* Accessible text and focus colours (plain values, so they hold contrast
+     whether or not the host switches Bootstrap's variables) */
+  --mp-text-subtle: #5c636a;           /* secondary hints; 6.1:1 on white */
+  --mp-focus-ring: #4f46e5;            /* focus outlines; 6.3:1 on white */
+
   /* Surfaces */
   --mp-surface: rgba(0, 0, 0, 0.02);
   --mp-border: rgba(0, 0, 0, 0.1);
@@ -88,6 +93,8 @@
 [data-bs-theme="dark"],
 .mp-theme-dark {
   --mp-primary-text: #818cf8;
+  --mp-text-subtle: #a3a9b0;           /* 6.5:1 on #212529 */
+  --mp-focus-ring: #818cf8;            /* 5.2:1 on #212529 (the brand indigo is 2.5:1) */
   --mp-surface: rgba(255, 255, 255, 0.03);
   --mp-border: rgba(255, 255, 255, 0.08);
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
@@ -402,7 +409,7 @@
   display: inline-block;
   width: 0.5em;
   height: 1.1em;
-  margin-left: 2px;
+  margin-inline-start: 2px;
   vertical-align: text-bottom;
   border-radius: 1px;
   background: var(--mp-ai-text);
@@ -428,7 +435,7 @@
 
 .mp-ai-prose ul,
 .mp-ai-prose ol {
-  padding-left: 1.25rem;
+  padding-inline-start: 1.25rem;
 }
 
 .mp-ai-prose code {
@@ -441,7 +448,10 @@
   font-size: 0.85em;
 }
 
+/* Code reads left to right even on an RTL page. */
 .mp-ai-prose pre {
+  direction: ltr;
+  unicode-bidi: isolate;
   padding: 0.625rem 0.75rem;
   overflow-x: auto;
   border-radius: 0.375rem;
@@ -512,14 +522,14 @@
 }
 
 .is-user > .mp-ai-chat-bubble {
-  border-bottom-right-radius: 0.25rem;
+  border-end-end-radius: 0.25rem;
   background: var(--mp-primary, #4f46e5);
   color: #fff;
 }
 
 .is-assistant > .mp-ai-chat-bubble {
   border: 1px solid var(--mp-border, rgba(0, 0, 0, 0.1));
-  border-bottom-left-radius: 0.25rem;
+  border-end-start-radius: 0.25rem;
   background: var(--mp-surface, rgba(0, 0, 0, 0.02));
 }
 
@@ -589,7 +599,7 @@
 .mp-ai-diff-stats {
   flex: none;
   display: inline-flex;
-  margin-left: auto;
+  margin-inline-start: auto;
   gap: 0.5rem;
   font-family: var(--bs-font-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
 }
@@ -603,6 +613,8 @@
 }
 
 .mp-ai-diff-body {
+  direction: ltr;
+  unicode-bidi: isolate;
   max-height: 24rem;
   margin: 0;
   padding: 0.375rem 0;
@@ -615,7 +627,7 @@
 .mp-ai-diff-line {
   display: block;
   min-width: max-content;
-  padding-right: 0.75rem;
+  padding-inline-end: 0.75rem;
   white-space: pre;
 }
 
@@ -652,7 +664,7 @@
 }
 
 .mp-ai-diff-status {
-  margin-right: auto;
+  margin-inline-end: auto;
   color: var(--mp-ai-fg-muted);
   font-size: 0.8125rem;
 }
