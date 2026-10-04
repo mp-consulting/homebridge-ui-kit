@@ -60,3 +60,21 @@ describe('ESM build (kit.mjs)', () => {
     assert.equal(globalThis.MpKit, undefined, 'the ES module does not set a global');
   });
 });
+
+describe('dark tokens', () => {
+  const css = readFileSync(dist('kit.css'), 'utf8');
+
+  test('apply under [data-bs-theme="dark"] and the selector-agnostic .mp-theme-dark', () => {
+    assert.match(css, /\[data-bs-theme="dark"\],\n\.mp-theme-dark \{\n\s+--mp-primary-text: #818cf8;/);
+  });
+
+  test('Bootstrap-variable host colours come after the plain .mp-theme-dark values', () => {
+    const plain = css.indexOf('.mp-theme-dark {\n  --mp-ai-surface: #212529;');
+    const bootstrap = css.indexOf('[data-bs-theme="dark"] {\n  --mp-ai-surface: var(--bs-body-bg');
+    assert.ok(plain > 0 && bootstrap > plain);
+  });
+
+  test('kit rules are not in a cascade layer (unlayered Bootstrap would win)', () => {
+    assert.doesNotMatch(css, /^\s*@layer\b/m);
+  });
+});

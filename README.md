@@ -280,7 +280,27 @@ root with any static server.
 
 ## Dark Mode
 
-Dark mode is handled entirely by Bootstrap's `data-bs-theme="dark"` attribute on `<html>`. Do **not** use `@media (prefers-color-scheme: dark)` blocks, `.dark-mode` CSS classes, or custom CSS variable overrides — Bootstrap handles all of this automatically. Use Bootstrap CSS variables (`var(--bs-body-bg)`, `var(--bs-primary)`, etc.) in your custom CSS instead of hardcoded hex values.
+Plugins use Bootstrap's `data-bs-theme="dark"` attribute on `<html>`: Bootstrap and the kit's
+`--mp-*` tokens both follow it. Use Bootstrap CSS variables (`var(--bs-body-bg)`, `var(--bs-primary)`, …)
+and the `--mp-*` tokens in your own CSS instead of hard-coded colours.
+
+Hosts whose dark mode is not Bootstrap's attribute (for example an app that toggles `body.dark-mode`,
+such as the Glass UI) add the **`mp-theme-dark`** class to the same element instead of copying the
+kit's dark values:
+
+```js
+document.body.classList.toggle('dark-mode', dark);
+document.body.classList.toggle('mp-theme-dark', dark); // kit tokens follow
+```
+
+Under `.mp-theme-dark` alone the host colours (`--mp-ai-surface`, `--mp-ai-fg`, …) are plain values
+from Bootstrap's dark palette, because the host does not switch Bootstrap's variables; override just
+the ones that differ (e.g. `--mp-ai-surface` for a different card colour). When an element has both
+`data-bs-theme="dark"` and `.mp-theme-dark`, the Bootstrap-variable values win.
+
+The kit's CSS is intentionally **not** wrapped in a cascade layer: unlayered styles beat every layered
+style, so with unlayered Bootstrap a `@layer mp-kit` would make Bootstrap override the kit's
+`.btn-primary` and `.mp-tabs` remaps.
 
 ## Development
 

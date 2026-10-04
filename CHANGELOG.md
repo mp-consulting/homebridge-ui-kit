@@ -9,6 +9,7 @@ All notable changes to this project will be documented in this file.
 - **Minified builds with source maps**: `dist/kit.min.js`, `dist/kit.min.css` and `dist/ai.min.css`, each with a `.map`.
 - **ES module build** `dist/kit.mjs` with named exports (`MpKit`, `escapeHtml`, `safeUrl`, `markdown`, `diffLines`, `StatusBadge`, `EmptyState`, `Loading`, `View`, `Footer`, `ai`, `version`); it does not set `window.MpKit`. The package root (`import … from '@mp-consulting/homebridge-ui-kit'`) resolves to it, and `exports` gains `/kit.min.css`, `/kit.min.js`, `/kit.mjs` and `/ai.min.css`.
 - `MpKit.version` holds the package version.
+- **`.mp-theme-dark` class**: the dark `--mp-*` tokens now also apply under this selector-agnostic class, so hosts whose dark mode is not Bootstrap's `data-bs-theme` (e.g. Glass UI's `body.dark-mode`) can opt in without copying hex values. Under the class alone the host colours (`--mp-ai-surface`, `--mp-ai-fg`, …) are plain Bootstrap-dark values; with `data-bs-theme="dark"` they keep following Bootstrap's variables. The kit's CSS stays unlayered on purpose (a `@layer` would let unlayered Bootstrap override the kit's remaps).
 
 ### Changed
 

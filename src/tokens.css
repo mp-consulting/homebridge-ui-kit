@@ -1,7 +1,16 @@
 /* ── Design tokens ──────────────────────────────────────────────────────────
    CSS custom properties used throughout the design system.
    Override these in your plugin's styles.css to customize per-plugin.
-   Light values live on :root; dark values follow Bootstrap's data-bs-theme.
+   Light values live on :root. Dark values apply under Bootstrap's
+   [data-bs-theme="dark"] or under the selector-agnostic .mp-theme-dark class,
+   for hosts whose dark mode does not use Bootstrap's attribute (e.g. a
+   `body.dark-mode` app): add .mp-theme-dark next to your own class instead of
+   copying these values.
+
+   The kit's rules are deliberately NOT wrapped in a cascade layer:
+   unlayered styles beat every layered style regardless of specificity or
+   order, so unlayered Bootstrap would then override the kit's Bootstrap
+   remaps (primary button, tabs, spinner) and break them.
    ────────────────────────────────────────────────────────────────────────── */
 
 :root {
@@ -73,12 +82,38 @@
   initial-value: 0deg;
 }
 
-[data-bs-theme="dark"] {
+/* Dark values that do not depend on Bootstrap. */
+[data-bs-theme="dark"],
+.mp-theme-dark {
   --mp-primary-text: #818cf8;
   --mp-surface: rgba(255, 255, 255, 0.03);
   --mp-border: rgba(255, 255, 255, 0.08);
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
   --mp-ai-text: #d8b4fe;               /* 9.6:1 on #212529 */
+  --mp-ai-glow-opacity: 0.7;
+  --mp-ai-edge-glow-opacity: 0.8;
+  --mp-ai-diff-add-bg: rgba(34, 197, 94, 0.16);
+  --mp-ai-diff-add-text: #bbf7d0;
+  --mp-ai-diff-del-bg: rgba(239, 68, 68, 0.18);
+  --mp-ai-diff-del-text: #fecaca;
+}
+
+/* .mp-theme-dark alone: the host does not switch Bootstrap's variables, so
+   the host colours are plain values (Bootstrap's dark palette). */
+.mp-theme-dark {
+  --mp-ai-surface: #212529;
+  --mp-ai-fg: #dee2e6;
+  --mp-ai-fg-muted: rgba(222, 226, 230, 0.75);
+  --mp-ai-bg: transparent;
+  --mp-ai-border-color: #495057;
+  --mp-ai-success-text: #75b798;
+  --mp-ai-danger-text: #ea868f;
+}
+
+/* Bootstrap's dark theme: follow its variables, so a plugin that customises
+   them is respected. Declared after .mp-theme-dark so it wins when an element
+   has both. */
+[data-bs-theme="dark"] {
   --mp-ai-surface: var(--bs-body-bg, #212529);
   --mp-ai-fg: var(--bs-body-color, #dee2e6);
   --mp-ai-fg-muted: var(--bs-secondary-color, rgba(222, 226, 230, 0.75));
@@ -86,10 +121,4 @@
   --mp-ai-border-color: var(--bs-border-color, #495057);
   --mp-ai-success-text: var(--bs-success-text-emphasis, #75b798);
   --mp-ai-danger-text: var(--bs-danger-text-emphasis, #ea868f);
-  --mp-ai-glow-opacity: 0.7;
-  --mp-ai-edge-glow-opacity: 0.8;
-  --mp-ai-diff-add-bg: rgba(34, 197, 94, 0.16);
-  --mp-ai-diff-add-text: #bbf7d0;
-  --mp-ai-diff-del-bg: rgba(239, 68, 68, 0.18);
-  --mp-ai-diff-del-text: #fecaca;
 }
