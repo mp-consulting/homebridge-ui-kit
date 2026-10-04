@@ -216,6 +216,40 @@ MpKit.Footer.render({ github, npm, changelog, target: '.mp-footer' })
 MpKit.escapeHtml(device.name)
 ```
 
+### Forms
+
+```js
+// Labelled Bootstrap controls (escaped; help/error wired with aria-describedby)
+form.innerHTML = MpKit.Form.field({ name: 'host', label: 'Host', help: 'IP or hostname', required: true })
+  + MpKit.Form.field({ name: 'pollInterval', label: 'Poll interval (s)', type: 'number', min: 10, value: 30 })
+  + MpKit.Form.field({ name: 'mode', label: 'Mode', type: 'select', options: ['cloud', 'lan'], value: 'lan' })
+  + MpKit.Form.field({ name: 'debug', label: 'Debug logging', type: 'switch' })
+  // Secret with Show/Hide (aria-pressed) and Copy buttons
+  + MpKit.Form.secret({ name: 'auth.token', label: 'API token', value: token });
+
+// Copy button for literal text or another element's value/text
+MpKit.CopyButton.render({ text: code, label: 'Copy code' });
+MpKit.CopyButton.render({ target: '#deviceId', size: 'sm' });
+await MpKit.copy('text');           // → true/false (Clipboard API, execCommand fallback)
+
+// Read / write named controls (dotted names nest: "auth.token" → { auth: { token } })
+MpKit.Form.fill(form, config);
+const values = MpKit.Form.values(form);
+
+// Dirty tracking + sticky Save bar → homebridge.updatePluginConfig + savePluginConfig
+const tracker = MpKit.Form.track(form, {
+  // optional: build the config blocks (default: merge values into the first block)
+  toConfig: (values, blocks) => [{ ...blocks[0], ...values, platform: 'MyPlatform' }],
+  // persist: false → only updatePluginConfig (the user clicks Homebridge's Save)
+});
+tracker.isDirty(); tracker.save(); tracker.discard(); tracker.reset(); tracker.destroy();
+```
+
+The copy and reveal buttons work through document-level delegated listeners the kit installs once,
+so the HTML strings need no extra wiring. Saving shows `MpKit.Toast` feedback (`toast: false` turns
+it off), re-enables the bar on failure and keeps the form dirty. Outside Homebridge (and without a
+custom `save(values)`), saving only resets the dirty state and resolves `false`.
+
 All text passed to the helpers is HTML-escaped, so it is safe to pass device names or other
 values that came from the network. To include markup, build the element yourself.
 

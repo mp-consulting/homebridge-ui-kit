@@ -8,6 +8,8 @@ import { Theme } from './theme.js';
 import { Tabs } from './tabs.js';
 import { Toast } from './toast.js';
 import { confirm } from './dialog.js';
+import { Form, CopyButton, copyText } from './form.js';
+import { installDelegates } from './delegates.js';
 
 export const version = __VERSION__;
 
@@ -24,12 +26,17 @@ export const MpKit = {
   Theme,
   Toast,
   confirm,
+  Form,
+  CopyButton,
+  copy: copyText,
   ai,
 };
 
+installDelegates();
+
 export {
   escapeHtml, safeUrl, announce, StatusBadge, EmptyState, Loading, View, Footer, Tabs, Theme, Toast, confirm,
-  ai, markdown, diffLines,
+  Form, CopyButton, copyText as copy, ai, markdown, diffLines,
 };
 
 export default MpKit;

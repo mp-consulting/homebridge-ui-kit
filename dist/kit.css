@@ -404,6 +404,50 @@
   user-select: none;
 }
 
+/* ── Forms ──────────────────────────────────────────────── */
+
+.mp-required {
+  color: var(--bs-danger-text-emphasis, #b02a37);
+}
+
+.mp-secret-input {
+  font-family: var(--bs-font-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}
+
+.mp-copy-btn.is-copied {
+  color: var(--bs-success-text-emphasis, #0a3622);
+  border-color: var(--bs-success, #198754);
+}
+
+/* Sticky Save bar shown by MpKit.Form.track() while there are unsaved changes */
+.mp-savebar {
+  position: sticky;
+  inset-block-end: 0;
+  z-index: 1020;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+  padding: 0.625rem 0.875rem;
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius);
+  background: var(--bs-body-bg, #fff);
+  box-shadow: 0 -0.25rem 1rem rgba(0, 0, 0, 0.08);
+  font-size: 0.875rem;
+}
+
+.mp-savebar[hidden] {
+  display: none;
+}
+
+.mp-savebar-actions {
+  display: inline-flex;
+  gap: 0.5rem;
+  margin-inline-start: auto;
+}
+
 /* ── Toasts (fallback outside Homebridge) ───────────────── */
 
 .mp-toast-container {
