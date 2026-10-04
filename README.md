@@ -53,9 +53,15 @@ Bootstrap Icons from your `node_modules`, so the UI needs nothing from a CDN:
 
 | Option | Effect |
 |--------|--------|
-| *(none)* | Copies the kit's browser files (`kit.css`, `kit.js`, `ai.css`, their `.min` variants, …) into `homebridge-ui/public/lib/` |
+| *(none)* | Copies the kit's browser files (`kit.css`, `kit.js`, `ai.css`, their `.min` variants, `kit.mjs`, `theme-boot.js`) into `homebridge-ui/public/lib/`. Source maps and `.d.ts` files are not copied, and the `sourceMappingURL` comments are stripped |
 | `--dest <dir>` | Copies into `<dir>` instead (relative to the current directory) |
+| `--only <files>` | Copies only these dist files (comma-separated, repeatable), e.g. `--only kit.min.css,kit.min.js,theme-boot.js` |
 | `--vendor` | Also copies `bootstrap.min.css`, `bootstrap.bundle.min.js`, `bootstrap-icons.min.css` and `fonts/bootstrap-icons.woff(2)` from the plugin's own `node_modules` (packages that are not installed are skipped) and strips their `sourceMappingURL` comments, producing the same `lib/` layout as the plugins' previous `copy:ui-assets` scripts |
+
+> **Load `kit.css` *or* `ai.css`, never both.** `kit.css` already contains everything in `ai.css`
+> (tokens + Assistant components); loading both duplicates ~20 kB of CSS and can reorder overrides.
+> Plugin UIs load `kit.css`; `ai.css` is for apps that do not use the plugin kit (the Glass UI).
+> The CLI warns when an `.html` page next to the destination folder links both.
 
 Without the CLI, the equivalent is:
 

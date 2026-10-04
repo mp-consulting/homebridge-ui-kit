@@ -13,7 +13,12 @@ All notable changes to this project will be documented in this file.
 - **`dist/theme-boot.js`** (~0.4 kB): a same-origin `<head>` script that applies the remembered or system theme before first paint, replacing the inline snippet the README used to recommend.
 - **`.mp-theme-dark` class**: the dark `--mp-*` tokens now also apply under this selector-agnostic class, so hosts whose dark mode is not Bootstrap's `data-bs-theme` (e.g. Glass UI's `body.dark-mode`) can opt in without copying hex values. Under the class alone the host colours (`--mp-ai-surface`, `--mp-ai-fg`, …) are plain Bootstrap-dark values; with `data-bs-theme="dark"` they keep following Bootstrap's variables. The kit's CSS stays unlayered on purpose (a `@layer` would let unlayered Bootstrap override the kit's remaps).
 
+- **`mp-ui-kit-copy --only <files>`** copies only the named dist files (comma-separated or repeated); unknown names fail with the list of available files.
+
 ### Changed
+
+- `mp-ui-kit-copy` copies only browser files: source maps and TypeScript declarations stay in the package, and `sourceMappingURL` comments are stripped from the copies.
+- **Double-load warning.** `kit.css` already contains `ai.css`; `mp-ui-kit-copy` now warns when an `.html` page next to the destination folder links both (as homebridge-ai-kit's UI did), and the README and `--help` say to load only one.
 
 - **README: local files are the default install.** The Homebridge UI's content-security policy only allows same-origin scripts and styles, so the integration guide now installs Bootstrap as a dev dependency, copies it with `mp-ui-kit-copy --vendor` and references `lib/` paths; the CDN tags moved into a note for use outside Homebridge.
 
