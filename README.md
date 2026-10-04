@@ -24,11 +24,12 @@ import { markdown, diffLines, escapeHtml } from '@mp-consulting/homebridge-ui-ki
 
 ## Integration
 
-> **Serve everything from the plugin.** The Homebridge UI loads a plugin's custom UI under a
-> content-security policy that only allows **same-origin** scripts and styles, so CDN `<script>` /
-> `<link>` tags are blocked. Install the kit *and* Bootstrap as dev dependencies and let
-> `mp-ui-kit-copy --vendor` copy them into `homebridge-ui/public/lib/`, then reference the local
-> `lib/` paths as shown below.
+> **Serve everything from the plugin.** The Homebridge UI serves a plugin's custom UI with a
+> content-security policy that only allows **same-origin** scripts and styles
+> (`script-src 'self' 'unsafe-inline'`, `style-src 'self' 'unsafe-inline'`), so CDN `<script>` /
+> `<link>` tags are blocked (a plugin's `customUiCspDomains` can only widen `script-src`, never
+> `style-src`). Install the kit *and* Bootstrap as dev dependencies and let `mp-ui-kit-copy --vendor`
+> copy them into `homebridge-ui/public/lib/`, then reference the local `lib/` paths as shown below.
 
 ### 1. Install as dev dependencies
 
@@ -453,9 +454,10 @@ req.cancel();                             // …and cancel it directly
 Outside Homebridge (e.g. the Glass UI) load only `dist/ai.css` and use the CSS
 classes directly.
 
-`examples/ai-preview.html` (repository only) previews every component in light and
-dark mode with a mocked `homebridge` object: run `npm run build` and serve the repo
-root with any static server.
+`examples/index.html` (repository only; published to GitHub Pages) is a gallery of every
+component — core, forms, feedback, pairing, logs and Assistant — with light/dark and RTL toggles
+and a mocked `homebridge` object; `examples/ai-preview.html` focuses on the Assistant components.
+See [Development](#development) to run them.
 
 ## Dark Mode
 
@@ -487,11 +489,28 @@ style, so with unlayered Bootstrap a `@layer mp-kit` would make Bootstrap overri
 npm install
 npm run build        # outputs to dist/ (commit the result)
 npm run build:check  # fails if dist/ is out of date (run in CI)
-npm test
+npm test             # node:test unit tests (jsdom) against dist/
+npm run test:types   # type-checks the .d.ts files
 ```
 
 Use the `--mp-*` tokens for brand colors. For text in the brand color use `--mp-primary-text`,
 which switches to a lighter shade in dark mode so it keeps WCAG AA contrast.
+
+### Gallery and visual tests
+
+```bash
+npm run examples              # copies dist/ + Bootstrap into examples/lib/ (git-ignored)
+npm run serve                 # http://localhost:4173/ with the Homebridge UI's CSP
+npx playwright install chromium
+npm run test:visual           # screenshots (light, dark, narrow, rtl) + axe-core + keyboard checks
+npm run test:visual:update    # refresh the baselines after an intentional visual change
+```
+
+Screenshot baselines live in `e2e/__screenshots__/<platform>/<project>/` because font rendering
+differs per OS. CI (Linux) writes missing Linux baselines instead of failing and uploads them as
+the `linux-screenshots` artifact; commit them to start comparing on CI. The axe-core (WCAG 2.2 AA)
+and keyboard checks always run. Append `?static&theme=dark&dir=rtl` to the gallery URL to preview a
+combination.
 
 ## License
 

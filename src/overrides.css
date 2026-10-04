@@ -20,3 +20,9 @@
 .spinner-grow.text-primary {
   color: var(--mp-primary) !important;
 }
+
+/* Outline secondary button: Bootstrap's #6c757d text is 4.49:1 on a light
+   surface and 3:1 on the dark background; use the contrast-safe token. */
+.btn-outline-secondary {
+  --bs-btn-color: var(--mp-text-subtle);
+}

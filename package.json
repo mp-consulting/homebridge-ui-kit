@@ -61,11 +61,17 @@
     "build": "node scripts/build.js",
     "build:check": "node scripts/build.js --check",
     "test": "node --test test/*.test.js",
-    "test:types": "tsc -p test/types"
+    "test:types": "tsc -p test/types",
+    "examples": "node scripts/copy-assets.js --vendor --dest examples/lib",
+    "serve": "node e2e/serve.js",
+    "test:visual": "playwright test",
+    "test:visual:update": "playwright test --update-snapshots"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
     "@playwright/test": "^1.63.0",
+    "bootstrap": "^5.3.8",
+    "bootstrap-icons": "^1.13.1",
     "esbuild": "^0.28.2",
     "jsdom": "^27.4.0",
     "typescript": "^7.0.2"

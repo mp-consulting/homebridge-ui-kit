@@ -391,6 +391,11 @@
 
 /* ── Forms ──────────────────────────────────────────────── */
 
+/* Bootstrap's invalid colour (#dc3545) is 4.3:1 on light surfaces. */
+.mp-field .invalid-feedback {
+  color: var(--bs-danger-text-emphasis, #b02a37);
+}
+
 .mp-required {
   color: var(--bs-danger-text-emphasis, #b02a37);
 }

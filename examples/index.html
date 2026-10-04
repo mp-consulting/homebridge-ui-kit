@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Homebridge UI Kit — component gallery</title>
+  <!-- Every file is same-origin, exactly as in a plugin's homebridge-ui/public/
+       (the Homebridge UI's CSP blocks CDNs). `npm run examples` fills lib/ via
+       `mp-ui-kit-copy --vendor --dest examples/lib`; then serve examples/. -->
+  <script src="lib/theme-boot.js"></script>
+  <script src="gallery-boot.js"></script>
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="lib/bootstrap-icons.min.css">
+  <link rel="stylesheet" href="lib/kit.css">
+  <link rel="stylesheet" href="gallery.css">
+</head>
+<body>
+  <a class="visually-hidden-focusable gallery-skip" href="#main">Skip to components</a>
+  <div class="container py-4 gallery">
+
+    <header class="mp-header justify-content-between flex-wrap gap-2">
+      <div class="d-flex align-items-center gap-3">
+        <span class="mp-header-icon" aria-hidden="true"><i class="bi bi-house-gear"></i></span>
+        <div>
+          <h1 class="mp-header-title">Homebridge UI Kit</h1>
+          <p class="mp-header-subtitle">Every component, in light, dark and right-to-left</p>
+        </div>
+      </div>
+      <div class="d-flex gap-2" role="group" aria-label="Preview options">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="themeToggle">Toggle theme</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="dirToggle">Toggle RTL</button>
+      </div>
+    </header>
+
+    <main id="main">
+
+      <section class="gallery-section" aria-labelledby="h-status">
+        <h2 class="gallery-heading" id="h-status">Status, empty and loading states</h2>
+        <div class="gallery-row" id="badges"></div>
+        <div class="row g-3 mt-1">
+          <div class="col-md-6"><div class="mp-settings-card" id="emptyState"></div></div>
+          <div class="col-md-6"><div class="mp-settings-card" id="loadingState"></div></div>
+        </div>
+        <div class="mp-settings-card p-3 mt-3" id="skeleton"></div>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="h-tabs">
+        <h2 class="gallery-heading" id="h-tabs">Tabs and views</h2>
+        <ul class="nav mp-tabs" id="tabs" aria-label="Plugin sections">
+          <li class="nav-item"><button type="button" class="nav-link active" data-mp-view="view-devices">Devices</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-mp-view="view-settings">Settings</button></li>
+          <li class="nav-item"><button type="button" class="nav-link" data-mp-view="view-about">About</button></li>
+        </ul>
+        <div class="pt-3">
+          <section class="mp-view active" id="view-devices" aria-label="Devices">
+            <h3 class="h6">Devices</h3>
+            <div id="deviceList"></div>
+          </section>
+          <section class="mp-view" id="view-settings" aria-label="Settings">
+            <h3 class="h6">Settings</h3>
+            <p class="mp-label mb-1">Polling</p>
+            <p>Every 30 seconds.</p>
+          </section>
+          <section class="mp-view" id="view-about" aria-label="About">
+            <h3 class="h6">About</h3>
+            <p>Views move focus to their heading and announce themselves.</p>
+          </section>
+        </div>
+        <p class="mp-label mt-4 mb-2">Loading list</p>
+        <div id="deviceListLoading"></div>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="h-forms">
+        <h2 class="gallery-heading" id="h-forms">Forms and the Save bar</h2>
+        <form id="settingsForm" class="mp-settings-card p-3" novalidate></form>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="h-feedback">
+        <h2 class="gallery-heading" id="h-feedback">Toasts and confirmation</h2>
+        <div class="gallery-row mb-3">
+          <button type="button" class="btn btn-primary btn-sm" id="toastBtn">Show a toast</button>
+          <button type="button" class="btn btn-danger btn-sm" id="confirmBtn">Remove device…</button>
+          <span class="small text-body-secondary" id="confirmResult" role="status"></span>
+        </div>
+        <div class="gallery-toasts" id="toastSamples"></div>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="h-pairing">
+        <h2 class="gallery-heading" id="h-pairing">Pairing and sign-in</h2>
+        <div class="row g-3">
+          <div class="col-lg-5"><div id="pin"></div></div>
+          <div class="col-lg-7"><div id="deviceCode"></div></div>
+        </div>
+        <p class="mp-label mt-4 mb-2">Wizard</p>
+        <div id="steps"></div>
+        <div class="mp-settings-card p-3">
+          <section id="step-1"><h3 class="h6">Sign in</h3><p class="mb-0">Connect your account.</p></section>
+          <section id="step-2" hidden><h3 class="h6">Choose devices</h3><p class="mb-0">Pick what to expose to HomeKit.</p></section>
+          <section id="step-3" hidden><h3 class="h6">Done</h3><p class="mb-0">Restart Homebridge to finish.</p></section>
+          <div class="d-flex gap-2 mt-3">
+            <button type="button" class="btn btn-outline-secondary btn-sm" id="stepPrev">Back</button>
+            <button type="button" class="btn btn-primary btn-sm" id="stepNext">Next</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="h-log">
+        <h2 class="gallery-heading" id="h-log">Log viewer</h2>
+        <div id="log"></div>
+      </section>
+
+      <section class="gallery-section" aria-labelledby="h-ai">
+        <h2 class="gallery-heading" id="h-ai">Assistant (AI)</h2>
+        <div class="gallery-row mb-3" id="aiButtons"></div>
+        <div class="mp-ai-halo p-3 mb-3">
+          <strong>Content on a neutral surface.</strong>
+          The gradient only draws the ring and the glow.
+        </div>
+        <div class="mb-3" id="aiAnswer"></div>
+        <div class="row g-3">
+          <div class="col-lg-7"><div id="aiDiff"></div></div>
+          <div class="col-lg-5"><div id="aiChat"></div></div>
+        </div>
+      </section>
+      <!-- The Save bar lives at the end of the page container, so it sticks to
+           the bottom of the viewport anywhere on the page while there are changes. -->
+      <div id="saveBarHost"></div>
+    </main>
+
+    <footer class="mp-footer"></footer>
+  </div>
+
+  <script src="lib/bootstrap.bundle.min.js"></script>
+  <script src="lib/kit.js"></script>
+  <script src="gallery.js"></script>
+</body>
+</html>

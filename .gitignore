@@ -28,3 +28,10 @@ node_modules/
 # BMad agent files
 _bmad/
 _bmad-output/
+
+# Examples: vendored files copied by `npm run examples`
+examples/lib/
+
+# Playwright
+test-results/
+playwright-report/

@@ -39,6 +39,8 @@ All notable changes to this project will be documented in this file.
 
 - `MpKit.View.show()` moves focus to the shown view's heading (or `[data-mp-focus]`, or the view) and announces it through a polite live region when switching from another view; the first show on page load does neither. Options `{ focus, announce }`.
 - `.mp-empty-state-hint` used `opacity: 0.7` on the secondary colour (3.3:1 on white); it now uses `--mp-text-subtle` (6.1:1 light, 6.5:1 dark).
+- `StatusBadge` text used `text-success` / `text-danger` / `text-secondary` on the subtle backgrounds (3.4–3.7:1); it now uses Bootstrap's `text-*-emphasis` colours.
+- `.btn-outline-secondary` (used by the kit's Copy, Show, Cancel and Discard buttons) takes its text colour from `--mp-text-subtle`: Bootstrap's `#6c757d` was 4.49:1 on light surfaces and 3:1 in dark mode. Form error text inside `.mp-field` uses the danger emphasis colour.
 - Focus rings (`.mp-device-card`, tabs, new components) use `--mp-focus-ring`; the brand indigo outline was 2.5:1 on the dark background.
 
 ### RTL
@@ -48,6 +50,8 @@ All notable changes to this project will be documented in this file.
 
 ### Development
 
+- **Component gallery** `examples/index.html` (every component, light/dark and RTL toggles, mocked `homebridge`), served same-origin from `examples/lib/` (`npm run examples`, `npm run serve` with the Homebridge UI's CSP); `examples/ai-preview.html` no longer loads Bootstrap from a CDN.
+- **Playwright tests** (`npm run test:visual`): full-page screenshots in light, dark, narrow and RTL projects, axe-core WCAG 2.2 AA checks, and keyboard checks for tabs, device cards, the confirm dialog and the Save bar. A new CI job runs them on Chromium; a GitHub Pages workflow deploys the gallery.
 - The JavaScript source is split into ES modules under `src/js/` and bundled with esbuild (dev dependency) into the classic script, the minified script and the ES module. `dist/kit.js` keeps exposing `window.MpKit` with the same API. Tests now run against the built files.
 
 ## [1.2.2] - 2026-10-04

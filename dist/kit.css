@@ -161,6 +161,12 @@
   color: var(--mp-primary) !important;
 }
 
+/* Outline secondary button: Bootstrap's #6c757d text is 4.49:1 on a light
+   surface and 3:1 on the dark background; use the contrast-safe token. */
+.btn-outline-secondary {
+  --bs-btn-color: var(--mp-text-subtle);
+}
+
 /* ── Components ─────────────────────────────────────────────────────────────
    Reusable UI components used across all Homebridge plugins.
    ────────────────────────────────────────────────────────────────────────── */
@@ -553,6 +559,11 @@
 }
 
 /* ── Forms ──────────────────────────────────────────────── */
+
+/* Bootstrap's invalid colour (#dc3545) is 4.3:1 on light surfaces. */
+.mp-field .invalid-feedback {
+  color: var(--bs-danger-text-emphasis, #b02a37);
+}
 
 .mp-required {
   color: var(--bs-danger-text-emphasis, #b02a37);

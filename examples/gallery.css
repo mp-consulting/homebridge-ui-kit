@@ -1,0 +1,12 @@
+.gallery { max-width: 960px; }
+.gallery-section { margin-top: 2.5rem; }
+.gallery-heading {
+  margin-bottom: 1rem;
+  padding-bottom: 0.375rem;
+  border-bottom: 1px solid var(--mp-border);
+  font-size: 1.0625rem;
+  font-weight: 600;
+}
+.gallery-row { display: flex; flex-wrap: wrap; gap: 0.75rem; align-items: center; }
+.gallery-toasts { display: grid; gap: 0.5rem; max-width: 24rem; }
+.gallery-skip { position: absolute; inset-inline-start: 1rem; inset-block-start: 1rem; z-index: 2000; }

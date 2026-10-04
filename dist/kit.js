@@ -118,9 +118,9 @@
     return '<svg class="mp-footer-icon" viewBox="0 0 16 16" aria-hidden="true" focusable="false">' + paths.map((d) => '<path d="' + d + '"/>').join("") + "</svg>";
   }
   var StatusBadge = {
-    online: (label) => badge("bg-success-subtle text-success", "mp-status-online", label || "Online"),
-    offline: (label) => badge("bg-danger-subtle text-danger", "mp-status-offline", label || "Offline"),
-    checking: (label) => badge("bg-secondary-subtle text-secondary", "mp-status-checking", label || "Checking…"),
+    online: (label) => badge("bg-success-subtle text-success-emphasis", "mp-status-online", label || "Online"),
+    offline: (label) => badge("bg-danger-subtle text-danger-emphasis", "mp-status-offline", label || "Offline"),
+    checking: (label) => badge("bg-secondary-subtle text-secondary-emphasis", "mp-status-checking", label || "Checking…"),
     disabled: (label) => badge("bg-secondary", null, label || "Disabled")
   };
   var EmptyState = {
