@@ -35,3 +35,6 @@ examples/lib/
 # Playwright
 test-results/
 playwright-report/
+
+# CI scratch
+pack.json

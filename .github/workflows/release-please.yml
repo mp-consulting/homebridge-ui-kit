@@ -1,0 +1,28 @@
+name: Release Please
+
+# Keeps a release PR open with the next version and changelog (from
+# conventional commits). Merging it tags the release and creates the GitHub
+# release, which triggers publish.yml.
+#
+# A release created with the default GITHUB_TOKEN does NOT trigger other
+# workflows, so set a RELEASE_PLEASE_TOKEN secret (fine-grained PAT or GitHub
+# App token with contents + pull-requests write) for publish.yml to run.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  release-please:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: googleapis/release-please-action@45996ed1f6d02564a971a2fa1b5860e934307cf7 # v5.0.0
+        with:
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || github.token }}
+          config-file: release-please-config.json
+          manifest-file: .release-please-manifest.json

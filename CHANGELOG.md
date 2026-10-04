@@ -52,6 +52,7 @@ All notable changes to this project will be documented in this file.
 
 - **Component gallery** `examples/index.html` (every component, light/dark and RTL toggles, mocked `homebridge`), served same-origin from `examples/lib/` (`npm run examples`, `npm run serve` with the Homebridge UI's CSP); `examples/ai-preview.html` no longer loads Bootstrap from a CDN.
 - **Playwright tests** (`npm run test:visual`): full-page screenshots in light, dark, narrow and RTL projects, axe-core WCAG 2.2 AA checks, and keyboard checks for tabs, device cards, the confirm dialog and the Save bar. A new CI job runs them on Chromium; a GitHub Pages workflow deploys the gallery.
+- **Release automation**: `npm run size` enforces gzip budgets for `kit.min.js`, `kit.min.css`, `ai.min.css` and `theme-boot.js` (CI and publish); CI verifies the `npm pack` contents; release-please (manifest config, `node` release type) prepares release PRs. Publishing keeps npm trusted publishing, which already attaches provenance, so no `--provenance` flag was added.
 - The JavaScript source is split into ES modules under `src/js/` and bundled with esbuild (dev dependency) into the classic script, the minified script and the ES module. `dist/kit.js` keeps exposing `window.MpKit` with the same API. Tests now run against the built files.
 
 ## [1.2.2] - 2026-10-04

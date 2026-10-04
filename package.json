@@ -65,7 +65,8 @@
     "examples": "node scripts/copy-assets.js --vendor --dest examples/lib",
     "serve": "node e2e/serve.js",
     "test:visual": "playwright test",
-    "test:visual:update": "playwright test --update-snapshots"
+    "test:visual:update": "playwright test --update-snapshots",
+    "size": "node scripts/check-size.js"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

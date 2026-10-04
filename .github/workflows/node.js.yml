@@ -34,6 +34,23 @@ jobs:
       - name: Type-check declarations
         run: npm run test:types
 
+      - name: Check size budgets
+        run: npm run size
+
+      - name: Check the package contents
+        run: |
+          npm pack --dry-run --json > pack.json
+          node -e "
+            const files = JSON.parse(require('fs').readFileSync('pack.json', 'utf8'))[0].files.map(f => f.path);
+            const need = ['dist/kit.css', 'dist/kit.js', 'dist/ai.css', 'dist/kit.min.js', 'dist/kit.min.css',
+              'dist/ai.min.css', 'dist/kit.mjs', 'dist/kit.d.ts', 'dist/kit.d.mts', 'dist/theme-boot.js',
+              'scripts/copy-assets.js'];
+            const missing = need.filter(f => !files.includes(f));
+            const stray = files.filter(f => /^(src|test|e2e|examples)\//.test(f));
+            if (missing.length || stray.length) { console.error({ missing, stray }); process.exit(1); }
+            console.log(files.length + ' files OK');
+          "
+
   visual:
     name: Visual and accessibility tests
     runs-on: ubuntu-latest

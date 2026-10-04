@@ -512,6 +512,16 @@ the `linux-screenshots` artifact; commit them to start comparing on CI. The axe-
 and keyboard checks always run. Append `?static&theme=dark&dir=rtl` to the gallery URL to preview a
 combination.
 
+### Releases
+
+`npm run size` checks the gzip size of the minified files against the budgets in
+`scripts/check-size.js` (CI and the publish workflow run it), and CI checks the `npm pack`
+contents. Releases are prepared by release-please (`release-please-config.json`,
+`.release-please-manifest.json`): it keeps a release PR with the next version and changelog from
+conventional commits; merging it creates the GitHub release, which runs `publish.yml` (npm trusted
+publishing, which adds provenance automatically). Set a `RELEASE_PLEASE_TOKEN` secret, because
+releases created with the default `GITHUB_TOKEN` do not trigger other workflows.
+
 ## License
 
 MIT © MP Consulting
