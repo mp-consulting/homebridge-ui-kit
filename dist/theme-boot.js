@@ -1,0 +1,2 @@
+/* @mp-consulting/homebridge-ui-kit v1.2.2 */
+(()=>{(function(){try{var t=document.documentElement,e=null;try{e=localStorage.getItem("mp-kit-theme")}catch{}var a=e==="dark"||e!=="light"&&!!window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches;t.setAttribute("data-bs-theme",a?"dark":"light"),a?t.classList.add("mp-theme-dark"):t.classList.remove("mp-theme-dark")}catch{}})();})();

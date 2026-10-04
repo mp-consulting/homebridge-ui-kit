@@ -4,6 +4,7 @@
 import { escapeHtml, safeUrl } from './util.js';
 import { StatusBadge, EmptyState, Loading, View, Footer } from './core.js';
 import { ai, markdown, diffLines } from './ai.js';
+import { Theme } from './theme.js';
 
 export const version = __VERSION__;
 
@@ -15,11 +16,12 @@ export const MpKit = {
   Loading,
   View,
   Footer,
+  Theme,
   ai,
 };
 
 export {
-  escapeHtml, safeUrl, StatusBadge, EmptyState, Loading, View, Footer, ai, markdown, diffLines,
+  escapeHtml, safeUrl, StatusBadge, EmptyState, Loading, View, Footer, Theme, ai, markdown, diffLines,
 };
 
 export default MpKit;

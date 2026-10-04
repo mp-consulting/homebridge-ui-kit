@@ -75,15 +75,7 @@ of `<body>` — all from `lib/`:
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <script>
-    (function() {
-      try {
-        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          document.documentElement.dataset.bsTheme = 'dark';
-        }
-      } catch(e) {}
-    })();
-  </script>
+  <script src="lib/theme-boot.js"></script>
   <link rel="stylesheet" href="lib/bootstrap.min.css">
   <link rel="stylesheet" href="lib/bootstrap-icons.min.css">
   <link rel="stylesheet" href="lib/kit.css">
@@ -109,18 +101,35 @@ of `<body>` — all from `lib/`:
 > <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
 > ```
 
-The early inline script applies `data-bs-theme="dark"` from the system preference before any CSS loads, preventing a flash of wrong theme. In your app script, also apply the Homebridge user's saved theme setting:
+#### Theme
+
+`lib/theme-boot.js` is a tiny, same-origin script (inline scripts are not needed) that sets
+`data-bs-theme` (and the `.mp-theme-dark` class) on `<html>` before the stylesheets paint, from the
+preference remembered by `MpKit.Theme` or else the system preference — no flash of the wrong theme.
+Then, in your app script, let the kit apply the Homebridge user's setting and follow changes:
 
 ```js
-try {
-  const settings = await homebridge.getUserSettings?.();
-  if (settings?.theme === 'dark') {
-    document.documentElement.dataset.bsTheme = 'dark';
-  } else if (settings?.theme === 'light') {
-    document.documentElement.dataset.bsTheme = 'light';
-  }
-} catch (e) {}
+const theme = MpKit.Theme.init();   // system preference now; Homebridge setting when it arrives
+await theme.ready;                  // optional: resolves with 'light' | 'dark'
 ```
+
+`MpKit.Theme.init(opts)` reads `homebridge.getUserSettings()` (`colorScheme`/`theme`: `light`,
+`dark` or `auto`) and falls back to `homebridge.userCurrentLightingMode()`; with `auto` (or outside
+Homebridge) it follows `prefers-color-scheme` live through a `matchMedia` listener. It remembers the
+preference in `localStorage` (`mp-kit-theme`) for `theme-boot.js`.
+
+| Option | Default | Effect |
+|--------|---------|--------|
+| `target` | `<html>` | Element that gets `data-bs-theme` / `.mp-theme-dark` |
+| `theme` | — | Force `'light'`, `'dark'` or `'auto'` and skip the Homebridge lookup |
+| `homebridge` | `true` | `false` skips the Homebridge lookup |
+| `attribute` / `className` | `true` | Set `data-bs-theme` / toggle `.mp-theme-dark` |
+| `storageKey` | `'mp-kit-theme'` | `localStorage` key (`false` disables it) |
+| `onChange(resolved, preference)` | — | Called when the resolved theme changes |
+
+The controller has `ready`, `preference()`, `resolved()`, `set('light' | 'dark' | 'auto')` and
+`destroy()`. Pure helpers: `MpKit.Theme.resolve(preference, systemDark)`, `.normalize(value)`,
+`.fromSettings(settings)` and `.apply(resolved, opts)`.
 
 ### 4. Update `.gitignore`
 
