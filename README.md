@@ -166,6 +166,21 @@ export default tseslint.config(
 );
 ```
 
+### 6. TypeScript (optional)
+
+The package ships declarations for both builds. For the classic script (`lib/kit.js`), add a
+reference once (e.g. in a `globals.d.ts`) to type the `MpKit` global and `window.MpKit`:
+
+```ts
+/// <reference types="@mp-consulting/homebridge-ui-kit/kit.js" />
+// or: import type {} from '@mp-consulting/homebridge-ui-kit/kit.js';
+```
+
+The ES module entry is typed automatically (`import { markdown } from '@mp-consulting/homebridge-ui-kit'`).
+Option and handle types are exported too, e.g. `import type { AiRequestOptions, ThemeController,
+DeviceItem } from '@mp-consulting/homebridge-ui-kit'`. In JavaScript files, `// @ts-check` plus the
+reference above gives editor completion for every helper.
+
 ## MpKit API
 
 ```js

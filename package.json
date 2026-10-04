@@ -15,22 +15,35 @@
   "author": "MP Consulting",
   "license": "MIT",
   "type": "module",
+  "types": "./dist/kit.d.mts",
+  "module": "./dist/kit.mjs",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/mp-consulting/homebridge-ui-kit.git"
   },
   "exports": {
     ".": {
+      "types": "./dist/kit.d.mts",
       "import": "./dist/kit.mjs",
       "default": "./dist/kit.mjs"
     },
     "./kit.css": "./dist/kit.css",
     "./kit.min.css": "./dist/kit.min.css",
-    "./kit.js": "./dist/kit.js",
-    "./kit.min.js": "./dist/kit.min.js",
-    "./kit.mjs": "./dist/kit.mjs",
+    "./kit.js": {
+      "types": "./dist/kit.d.ts",
+      "default": "./dist/kit.js"
+    },
+    "./kit.min.js": {
+      "types": "./dist/kit.d.ts",
+      "default": "./dist/kit.min.js"
+    },
+    "./kit.mjs": {
+      "types": "./dist/kit.d.mts",
+      "default": "./dist/kit.mjs"
+    },
     "./ai.css": "./dist/ai.css",
     "./ai.min.css": "./dist/ai.min.css",
+    "./theme-boot.js": "./dist/theme-boot.js",
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
@@ -47,7 +60,8 @@
   "scripts": {
     "build": "node scripts/build.js",
     "build:check": "node scripts/build.js --check",
-    "test": "node --test test/*.test.js"
+    "test": "node --test test/*.test.js",
+    "test:types": "tsc -p test/types"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",
@@ -55,6 +69,5 @@
     "esbuild": "^0.28.2",
     "jsdom": "^27.4.0",
     "typescript": "^7.0.2"
-  },
-  "module": "./dist/kit.mjs"
+  }
 }

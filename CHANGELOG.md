@@ -6,6 +6,7 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 
+- **TypeScript declarations**: `dist/kit.d.ts` types the `MpKit` global and `window.MpKit` (every helper, the `ai.*` options and handles such as `AiRequest` with `cancel()`, `Theme`, and the new components) and exports the option/handle types; `dist/kit.d.mts` types the ES module's named exports. `exports` gains `types` conditions for `.`, `/kit.js`, `/kit.min.js` and `/kit.mjs`.
 - **Minified builds with source maps**: `dist/kit.min.js`, `dist/kit.min.css` and `dist/ai.min.css`, each with a `.map`.
 - **ES module build** `dist/kit.mjs` with named exports (`MpKit`, `escapeHtml`, `safeUrl`, `markdown`, `diffLines`, `StatusBadge`, `EmptyState`, `Loading`, `View`, `Footer`, `ai`, `version`); it does not set `window.MpKit`. The package root (`import … from '@mp-consulting/homebridge-ui-kit'`) resolves to it, and `exports` gains `/kit.min.css`, `/kit.min.js`, `/kit.mjs` and `/ai.min.css`.
 - `MpKit.version` holds the package version.
