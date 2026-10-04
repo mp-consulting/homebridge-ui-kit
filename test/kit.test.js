@@ -6,7 +6,7 @@ import { fileURLToPath } from 'url';
 import vm from 'vm';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
-const source = readFileSync(join(root, 'src', 'kit.js'), 'utf8');
+const source = readFileSync(join(root, 'dist', 'kit.js'), 'utf8');
 
 // Minimal DOM stand-in: just enough for View and Footer.
 function fakeElement(id, classes = []) {

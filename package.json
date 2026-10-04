@@ -20,9 +20,17 @@
     "url": "git+https://github.com/mp-consulting/homebridge-ui-kit.git"
   },
   "exports": {
+    ".": {
+      "import": "./dist/kit.mjs",
+      "default": "./dist/kit.mjs"
+    },
     "./kit.css": "./dist/kit.css",
+    "./kit.min.css": "./dist/kit.min.css",
     "./kit.js": "./dist/kit.js",
+    "./kit.min.js": "./dist/kit.min.js",
+    "./kit.mjs": "./dist/kit.mjs",
     "./ai.css": "./dist/ai.css",
+    "./ai.min.css": "./dist/ai.min.css",
     "./dist/*": "./dist/*",
     "./package.json": "./package.json"
   },
@@ -40,5 +48,13 @@
     "build": "node scripts/build.js",
     "build:check": "node scripts/build.js --check",
     "test": "node --test test/*.test.js"
-  }
+  },
+  "devDependencies": {
+    "@axe-core/playwright": "^4.13.0",
+    "@playwright/test": "^1.63.0",
+    "esbuild": "^0.28.2",
+    "jsdom": "^27.4.0",
+    "typescript": "^7.0.2"
+  },
+  "module": "./dist/kit.mjs"
 }

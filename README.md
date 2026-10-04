@@ -9,10 +9,18 @@ Provides shared CSS tokens, Bootstrap 5 overrides, and vanilla JS UI components 
 | File | Description |
 |------|-------------|
 | `dist/kit.css` | CSS tokens, Bootstrap overrides, shared component styles and the Assistant (AI) components |
-| `dist/kit.js` | Vanilla JS helpers exposed as `window.MpKit` (including `MpKit.ai`) |
+| `dist/kit.js` | Vanilla JS helpers exposed as `window.MpKit` (including `MpKit.ai`) — a classic script |
 | `dist/ai.css` | Standalone build: tokens + Assistant components only, no Bootstrap overrides (for non-plugin apps such as the Glass UI) |
+| `dist/kit.min.css`, `dist/kit.min.js`, `dist/ai.min.css` | Minified builds of the above, each with a `.map` source map |
+| `dist/kit.mjs` | ES module: `MpKit` (default export) plus named exports (`escapeHtml`, `markdown`, `diffLines`, `StatusBadge`, …); it does not set a global |
 
-Package entry points: `@mp-consulting/homebridge-ui-kit/dist/*` (and the shortcuts `/kit.css`, `/kit.js`, `/ai.css`).
+Package entry points: `@mp-consulting/homebridge-ui-kit` (the ES module), `@mp-consulting/homebridge-ui-kit/dist/*`
+and the shortcuts `/kit.css`, `/kit.min.css`, `/kit.js`, `/kit.min.js`, `/kit.mjs`, `/ai.css`, `/ai.min.css`.
+
+```js
+// In a bundled app (e.g. the Glass UI) — pure helpers, no global, tree-shakeable
+import { markdown, diffLines, escapeHtml } from '@mp-consulting/homebridge-ui-kit';
+```
 
 ## Integration
 

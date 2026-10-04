@@ -2,6 +2,18 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- **Minified builds with source maps**: `dist/kit.min.js`, `dist/kit.min.css` and `dist/ai.min.css`, each with a `.map`.
+- **ES module build** `dist/kit.mjs` with named exports (`MpKit`, `escapeHtml`, `safeUrl`, `markdown`, `diffLines`, `StatusBadge`, `EmptyState`, `Loading`, `View`, `Footer`, `ai`, `version`); it does not set `window.MpKit`. The package root (`import … from '@mp-consulting/homebridge-ui-kit'`) resolves to it, and `exports` gains `/kit.min.css`, `/kit.min.js`, `/kit.mjs` and `/ai.min.css`.
+- `MpKit.version` holds the package version.
+
+### Development
+
+- The JavaScript source is split into ES modules under `src/js/` and bundled with esbuild (dev dependency) into the classic script, the minified script and the ES module. `dist/kit.js` keeps exposing `window.MpKit` with the same API. Tests now run against the built files.
+
 ## [1.2.2] - 2026-10-04
 
 ### Fixed
