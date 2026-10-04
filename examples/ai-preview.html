@@ -74,8 +74,9 @@
     </section>
 
     <section class="preview-section">
-      <p class="mp-label">Config diff</p>
+      <p class="mp-label">Config diff, full width and in a narrow column</p>
       <div id="diff"></div>
+      <div class="preview-narrow mt-3" id="narrowDiff"></div>
     </section>
 
     <section class="preview-section">
@@ -160,6 +161,12 @@
       after: { platform: 'Demo', name: 'Demo', pollingInterval: 60, devices: [{ id: 'lamp', host: '192.168.1.40' }] },
       onApply: function () { return new Promise(function (r) { setTimeout(r, 400); }); },
       onReject: function () {},
+    });
+
+    MpKit.ai.renderDiff(document.getElementById('narrowDiff'), {
+      title: 'Suggested configuration change',
+      before: { platform: 'Demo', mode: 'auto' },
+      after: { platform: 'Demo', mode: 'lan' },
     });
 
     MpKit.ai.renderChat(document.getElementById('chat'), { context: 'Plugin: demo' });
