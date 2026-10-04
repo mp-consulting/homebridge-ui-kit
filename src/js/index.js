@@ -10,6 +10,8 @@ import { Toast } from './toast.js';
 import { confirm } from './dialog.js';
 import { Form, CopyButton, copyText } from './form.js';
 import { installDelegates } from './delegates.js';
+import { DeviceList, Skeleton } from './devices.js';
+import { LogViewer, stripAnsi } from './log.js';
 
 export const version = __VERSION__;
 
@@ -29,6 +31,10 @@ export const MpKit = {
   Form,
   CopyButton,
   copy: copyText,
+  DeviceList,
+  Skeleton,
+  LogViewer,
+  stripAnsi,
   ai,
 };
 
@@ -36,7 +42,7 @@ installDelegates();
 
 export {
   escapeHtml, safeUrl, announce, StatusBadge, EmptyState, Loading, View, Footer, Tabs, Theme, Toast, confirm,
-  Form, CopyButton, copyText as copy, ai, markdown, diffLines,
+  Form, CopyButton, copyText as copy, DeviceList, Skeleton, LogViewer, stripAnsi, ai, markdown, diffLines,
 };
 
 export default MpKit;

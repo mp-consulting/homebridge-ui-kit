@@ -250,6 +250,36 @@ so the HTML strings need no extra wiring. Saving shows `MpKit.Toast` feedback (`
 it off), re-enables the bar on failure and keeps the form dirty. Outside Homebridge (and without a
 custom `save(values)`), saving only resets the dirty state and resolves `false`.
 
+### Device lists, skeletons and logs
+
+```js
+// Searchable device list with loading (skeleton), empty and no-results states.
+const list = MpKit.DeviceList.render('#devices', {
+  loading: true,                         // skeleton cards + aria-busy until setItems()
+  label: 'Devices',                      // list name; search label "Search devices"
+  empty: { title: 'No devices found', hint: 'Click Discover to scan your network' },
+  onActivate: (device, index) => openDevice(device), // cards become role="button" (Enter/Space)
+  // renderItem: (device) => `<div class="card mp-device-card" role="button" tabindex="0">…</div>`,
+  // keys: ['name', 'subtitle', 'id'], filter: (device, query) => …, search: false,
+});
+list.setItems([{ id, name, subtitle: '192.168.1.40', status: 'online', iconClass: 'bi bi-lightbulb' }]);
+list.setQuery('lamp'); list.setLoading(true);
+
+// Shimmer placeholders (static with prefers-reduced-motion)
+el.innerHTML = MpKit.Skeleton.render({ lines: 3, avatar: true });
+
+// Plain-text log: ANSI codes stripped, capped, auto-scrolls unless the user
+// scrolled up (then shows "Jump to latest"); role="log", keyboard scrollable.
+const log = MpKit.LogViewer.create('#log', { maxLines: 1000, label: 'Plugin log' });
+log.append('\u001b[32m[info]\u001b[0m Connected\nSecond line');
+MpKit.stripAnsi(text);
+```
+
+Default device cards show `name` (or `displayName`), `subtitle`, `iconClass` and a `status` badge
+(`online` / `offline` / `checking` / `disabled`). Any `.mp-device-card[role="button"]` on the page —
+yours included — is activated by Enter and Space. The log's live region is off by default
+(a busy log would flood screen readers); pass `live: 'polite'` for low-volume logs.
+
 All text passed to the helpers is HTML-escaped, so it is safe to pass device names or other
 values that came from the network. To include markup, build the element yourself.
 

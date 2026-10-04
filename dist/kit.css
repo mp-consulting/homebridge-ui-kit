@@ -37,6 +37,10 @@
   --mp-surface: rgba(0, 0, 0, 0.02);
   --mp-border: rgba(0, 0, 0, 0.1);
 
+  /* Skeleton shimmer */
+  --mp-skeleton-base: rgba(0, 0, 0, 0.08);
+  --mp-skeleton-shine: rgba(0, 0, 0, 0.03);
+
   /* Shape */
   --mp-radius: 0.5rem;
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
@@ -98,6 +102,8 @@
   --mp-surface: rgba(255, 255, 255, 0.03);
   --mp-border: rgba(255, 255, 255, 0.08);
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  --mp-skeleton-base: rgba(255, 255, 255, 0.08);
+  --mp-skeleton-shine: rgba(255, 255, 255, 0.16);
   --mp-ai-text: #d8b4fe;               /* 9.6:1 on #212529 */
   --mp-ai-glow-opacity: 0.7;
   --mp-ai-edge-glow-opacity: 0.8;
@@ -238,6 +244,148 @@
 .mp-device-card:focus-visible {
   outline: 2px solid var(--mp-focus-ring);
   outline-offset: 2px;
+}
+
+/* Default card content rendered by MpKit.DeviceList */
+.mp-device-card-body {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mp-device-card-icon {
+  flex: none;
+  font-size: 1.5rem;
+  line-height: 1;
+  color: var(--mp-primary-text);
+}
+
+.mp-device-card-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.mp-device-card-name {
+  font-weight: 600;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.mp-device-card-subtitle {
+  font-size: 0.8125rem;
+  color: var(--bs-secondary-color);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── Device list ────────────────────────────────────────── */
+
+.mp-device-list-search {
+  margin-bottom: 0.75rem;
+}
+
+.mp-device-list-items {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.mp-device-card-skeleton {
+  cursor: default;
+}
+
+.mp-device-card-skeleton:hover {
+  transform: none;
+  box-shadow: none !important;
+}
+
+/* ── Skeleton shimmer ───────────────────────────────────── */
+
+.mp-skeleton {
+  display: block;
+  border-radius: 0.25rem;
+  background: linear-gradient(90deg, var(--mp-skeleton-base) 25%, var(--mp-skeleton-shine) 50%, var(--mp-skeleton-base) 75%);
+  background-size: 200% 100%;
+  animation: mp-shimmer 1.4s ease-in-out infinite;
+}
+
+.mp-skeleton-text {
+  height: 0.75rem;
+  width: 100%;
+}
+
+.mp-skeleton-text + .mp-skeleton-text {
+  margin-top: 0.5rem;
+}
+
+.mp-skeleton-circle {
+  flex: none;
+  width: 2rem;
+  height: 2rem;
+  border-radius: 50%;
+}
+
+.mp-skeleton-group {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.mp-skeleton-lines {
+  flex: 1;
+  min-width: 0;
+}
+
+@keyframes mp-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+
+/* RTL: shimmer travels the other way */
+[dir="rtl"] .mp-skeleton {
+  animation-direction: reverse;
+}
+
+/* ── Log viewer ─────────────────────────────────────────── */
+
+.mp-log {
+  position: relative;
+}
+
+.mp-log-body {
+  direction: ltr;
+  unicode-bidi: isolate;
+  max-height: var(--mp-log-height, 20rem);
+  overflow: auto;
+  padding: 0.5rem 0.75rem;
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius);
+  background: var(--mp-surface);
+  font-family: var(--bs-font-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+  font-size: 0.8125rem;
+  line-height: 1.5;
+}
+
+.mp-log-body:focus-visible {
+  outline: 2px solid var(--mp-focus-ring);
+  outline-offset: 2px;
+}
+
+.mp-log-line {
+  min-height: 1.5em;
+  white-space: pre;
+}
+
+.mp-log-wrap .mp-log-line {
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.mp-log-jump {
+  position: absolute;
+  inset-block-end: 0.75rem;
+  inset-inline-end: 1.25rem;
 }
 
 /* ── Settings surface card ──────────────────────────────── */
@@ -598,6 +746,7 @@
 /* ── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
+  .mp-skeleton,
   .mp-status-checking,
   .mp-toast,
   .mp-dialog-backdrop {

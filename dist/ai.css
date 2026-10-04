@@ -37,6 +37,10 @@
   --mp-surface: rgba(0, 0, 0, 0.02);
   --mp-border: rgba(0, 0, 0, 0.1);
 
+  /* Skeleton shimmer */
+  --mp-skeleton-base: rgba(0, 0, 0, 0.08);
+  --mp-skeleton-shine: rgba(0, 0, 0, 0.03);
+
   /* Shape */
   --mp-radius: 0.5rem;
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
@@ -98,6 +102,8 @@
   --mp-surface: rgba(255, 255, 255, 0.03);
   --mp-border: rgba(255, 255, 255, 0.08);
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  --mp-skeleton-base: rgba(255, 255, 255, 0.08);
+  --mp-skeleton-shine: rgba(255, 255, 255, 0.16);
   --mp-ai-text: #d8b4fe;               /* 9.6:1 on #212529 */
   --mp-ai-glow-opacity: 0.7;
   --mp-ai-edge-glow-opacity: 0.8;
