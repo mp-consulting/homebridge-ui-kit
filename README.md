@@ -520,9 +520,10 @@ combination.
 `scripts/check-size.js` (CI and the publish workflow run it), and CI checks the `npm pack`
 contents. Releases are prepared by release-please (`release-please-config.json`,
 `.release-please-manifest.json`): it keeps a release PR with the next version and changelog from
-conventional commits; merging it creates the GitHub release, which runs `publish.yml` (npm trusted
-publishing, which adds provenance automatically). Set a `RELEASE_PLEASE_TOKEN` secret, because
-releases created with the default `GITHUB_TOKEN` do not trigger other workflows.
+conventional commits; merging it creates the GitHub release and then starts `publish.yml` on the
+new tag with a `workflow_dispatch` (npm trusted publishing, which adds provenance automatically). No
+extra secret is needed: the default `GITHUB_TOKEN` may start a `workflow_dispatch`, and a release
+published by hand still runs `publish.yml` through its `release` trigger.
 
 ## License
 
