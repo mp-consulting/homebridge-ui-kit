@@ -30,28 +30,57 @@ function eventData(ev) {
   return ev;
 }
 
+function abortError(reason) {
+  if (reason != null) { return reason; }
+  var message = 'The Assistant request was cancelled';
+  if (typeof DOMException === 'function') {
+    try { return new DOMException(message, 'AbortError'); } catch (e) { /* old engines */ }
+  }
+  var err = new Error(message);
+  err.name = 'AbortError';
+  return err;
+}
+
+/** Tells the server to stop generating; best effort, failures are ignored. */
+function notifyCancel(hb, requestId) {
+  try {
+    Promise.resolve(hb.request('/ai/cancel', { requestId: requestId })).catch(function () {});
+  } catch (e) { /* ignore */ }
+}
+
 /**
  * Sends a request to an /ai/* route with a generated requestId and, while it
  * runs, forwards matching `ai:chunk` / `ai:done` / `ai:error` events to the
  * onChunk / onDone / onError callbacks. Resolves with the route's result.
+ *
+ * Cancellation: pass `opts.signal` (an AbortSignal) or call `.cancel()` on the
+ * returned promise. Either rejects it with an AbortError (or the signal's
+ * reason), removes the event listeners and, unless `opts.notifyServer` is
+ * false, sends a best-effort `/ai/cancel` request with the requestId.
+ * The promise also carries `.requestId`.
  */
 function aiRequest(path, body, opts) {
   opts = opts || {};
   var hb = hbClient();
   if (!hb || typeof hb.request !== 'function') {
-    return Promise.reject(new Error('MpKit.ai needs the Homebridge plugin UI (window.homebridge)'));
+    return withCancel(Promise.reject(new Error('MpKit.ai needs the Homebridge plugin UI (window.homebridge)')));
+  }
+  var signal = opts.signal;
+  if (signal && signal.aborted) {
+    return withCancel(Promise.reject(abortError(signal.reason)));
   }
   var requestId = newRequestId();
   var payload = {};
   Object.keys(body || {}).forEach(function (k) { payload[k] = body[k]; });
   payload.requestId = requestId;
 
+  var settled = false;
   var listeners = [];
   if (typeof hb.addEventListener === 'function') {
     var on = function (type, fn) {
       var handler = function (ev) {
         var data = eventData(ev);
-        if (data && data.requestId === requestId) { fn(data); }
+        if (!settled && data && data.requestId === requestId) { fn(data); }
       };
       hb.addEventListener(type, handler);
       listeners.push([type, handler]);
@@ -68,9 +97,34 @@ function aiRequest(path, body, opts) {
       on('ai:error', function (d) { opts.onError(d.message || DEFAULT_ERROR, d); });
     }
   }
+
+  var rejectCancelled;
+  var cancelled = new Promise(function (resolve, reject) { rejectCancelled = reject; });
+  // Avoid an unhandled rejection when nobody awaits a cancelled request.
+  cancelled.catch(function () {});
+
+  function onAbort() { cancel(signal.reason); }
+
   function cleanup() {
+    settled = true;
+    if (signal && typeof signal.removeEventListener === 'function') {
+      signal.removeEventListener('abort', onAbort);
+    }
     if (typeof hb.removeEventListener !== 'function') { return; }
     listeners.forEach(function (l) { hb.removeEventListener(l[0], l[1]); });
+    listeners = [];
+  }
+
+  function cancel(reason) {
+    if (settled) { return false; }
+    cleanup();
+    if (opts.notifyServer !== false) { notifyCancel(hb, requestId); }
+    rejectCancelled(abortError(reason));
+    return true;
+  }
+
+  if (signal && typeof signal.addEventListener === 'function') {
+    signal.addEventListener('abort', onAbort);
   }
 
   var pending;
@@ -79,13 +133,20 @@ function aiRequest(path, body, opts) {
   } catch (err) {
     pending = Promise.reject(err);
   }
-  return pending.then(function (result) {
+  var result = Promise.race([pending, cancelled]).then(function (value) {
     cleanup();
-    return result;
+    return value;
   }, function (err) {
     cleanup();
     throw err;
   });
+  return withCancel(result, cancel, requestId);
+}
+
+function withCancel(promise, cancel, requestId) {
+  promise.cancel = cancel || function () { return false; };
+  promise.requestId = requestId || null;
+  return promise;
 }
 
 // ── Safe markdown subset ──
@@ -279,7 +340,11 @@ export const ai = {
     return Promise.resolve(hb.request('/ai/status'));
   },
 
-  /** Explains a device/plugin error. body: { error, context?, device? } → { text, usage } */
+  /**
+   * Explains a device/plugin error. body: { error, context?, device? } → { text, usage }
+   * opts: { onChunk, onDone, onError, signal, notifyServer = true }; the
+   * returned promise has .cancel() and .requestId.
+   */
   explain: function (body, opts) { return aiRequest('/ai/explain', body, opts); },
 
   /** Free-form question. body: { prompt, context? } → { text, usage } */
@@ -464,7 +529,8 @@ export const ai = {
    * { onChunk, history }) to use another transport; it may resolve with a
    * string or { text }.
    * opts: { label = 'Assistant', context, placeholder, emptyText, onSend }
-   * Returns { send(text?), clear(), messages() }.
+   * onSend also receives ctx.signal (an AbortSignal) for chat.cancel().
+   * Returns { send(text?), cancel(), clear(), messages() }.
    */
   renderChat: function (el, opts) {
     opts = opts || {};
@@ -495,6 +561,7 @@ export const ai = {
       var html = markdown(m.text);
       if (m.streaming) { html = m.text ? withCaret(html) : thinkingHtml(); }
       if (m.error) { html += '<p class="mp-ai-error" role="alert">' + escapeHtml(m.error) + '</p>'; }
+      if (m.stopped) { html += '<p class="mp-ai-panel-note">Stopped</p>'; }
       return '<div class="mp-ai-chat-msg is-assistant"><div class="mp-ai-chat-bubble mp-ai-prose">'
         + '<span class="mp-ai-sr-only">' + escapeHtml(opts.label || 'Assistant') + ': </span>'
         + html + '</div></div>';
@@ -518,14 +585,16 @@ export const ai = {
         .filter(Boolean).join('\n\n');
       var body = { prompt: prompt };
       if (context) { body.context = context; }
-      return ai.ask(body, { onChunk: ctx.onChunk });
+      return ai.ask(body, { onChunk: ctx.onChunk, signal: ctx.signal });
     }
+
+    var controller = null;
 
     function send(text) {
       var prompt = String(text == null ? input.value : text).trim();
       if (!prompt || busy) { return Promise.resolve(null); }
       if (text == null) { input.value = ''; }
-      var history = messages.filter(function (m) { return !m.error; }).map(function (m) {
+      var history = messages.filter(function (m) { return !m.error && !m.stopped; }).map(function (m) {
         return { role: m.role, text: m.text };
       });
       var reply = { role: 'assistant', text: '', streaming: true };
@@ -533,10 +602,13 @@ export const ai = {
       busy = true;
       paint();
       var handler = typeof opts.onSend === 'function' ? opts.onSend : defaultSend;
+      controller = typeof AbortController === 'function' ? new AbortController() : null;
+      var signal = controller ? controller.signal : undefined;
       return Promise.resolve()
         .then(function () {
           return handler(prompt, {
             history: history,
+            signal: signal,
             onChunk: function (delta) {
               reply.text += delta == null ? '' : String(delta);
               paint();
@@ -547,13 +619,18 @@ export const ai = {
           var final = res && typeof res === 'object' ? res.text : res;
           if (typeof final === 'string' && final) { reply.text = final; }
         }, function (err) {
-          reply.error = errorMessage(err, DEFAULT_ERROR);
+          if ((err && err.name === 'AbortError') || (signal && signal.aborted)) {
+            reply.stopped = true;
+          } else {
+            reply.error = errorMessage(err, DEFAULT_ERROR);
+          }
         })
         .then(function () {
           reply.streaming = false;
           busy = false;
+          controller = null;
           paint();
-          return reply.error ? null : reply.text;
+          return reply.error || reply.stopped ? null : reply.text;
         });
     }
 
@@ -572,6 +649,12 @@ export const ai = {
 
     return {
       send: send,
+      /** Stops the reply in progress (aborts the signal passed to onSend / ask). */
+      cancel: function () {
+        if (!controller) { return false; }
+        controller.abort();
+        return true;
+      },
       clear: function () {
         messages = [];
         paint();

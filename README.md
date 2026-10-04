@@ -285,6 +285,30 @@ const chat = MpKit.ai.renderChat(document.getElementById('chat'), {
 });
 ```
 
+#### Cancelling a request
+
+Every request accepts an `AbortSignal` and returns a promise with `.cancel()` (and `.requestId`).
+Cancelling rejects the promise with an `AbortError` (or the signal's reason), removes the event
+listeners — late chunks are ignored — and sends a best-effort `/ai/cancel` request with the
+`requestId` so a server that supports it can stop generating (failures are ignored; pass
+`notifyServer: false` to skip it).
+
+```js
+const controller = new AbortController();
+stopBtn.onclick = () => controller.abort();
+try {
+  await MpKit.ai.ask({ prompt }, { onChunk: answer.append, signal: controller.signal });
+} catch (e) {
+  if (e.name !== 'AbortError') { answer.error(e); }
+}
+
+const req = MpKit.ai.explain({ error });  // or keep the promise…
+req.cancel();                             // …and cancel it directly
+```
+
+`renderChat()` returns `cancel()` too (the partial reply stays, marked "Stopped"), and passes
+`ctx.signal` to a custom `onSend`.
+
 `MpKit.ai.markdown(text)` and `MpKit.ai.diffLines(before, after)` are exported too.
 Outside Homebridge (e.g. the Glass UI) load only `dist/ai.css` and use the CSS
 classes directly.

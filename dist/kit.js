@@ -143,11 +143,37 @@
     }
     return ev;
   }
+  function abortError(reason) {
+    if (reason != null) {
+      return reason;
+    }
+    var message = "The Assistant request was cancelled";
+    if (typeof DOMException === "function") {
+      try {
+        return new DOMException(message, "AbortError");
+      } catch (e) {
+      }
+    }
+    var err = new Error(message);
+    err.name = "AbortError";
+    return err;
+  }
+  function notifyCancel(hb, requestId) {
+    try {
+      Promise.resolve(hb.request("/ai/cancel", { requestId })).catch(function() {
+      });
+    } catch (e) {
+    }
+  }
   function aiRequest(path, body, opts) {
     opts = opts || {};
     var hb = hbClient();
     if (!hb || typeof hb.request !== "function") {
-      return Promise.reject(new Error("MpKit.ai needs the Homebridge plugin UI (window.homebridge)"));
+      return withCancel(Promise.reject(new Error("MpKit.ai needs the Homebridge plugin UI (window.homebridge)")));
+    }
+    var signal = opts.signal;
+    if (signal && signal.aborted) {
+      return withCancel(Promise.reject(abortError(signal.reason)));
     }
     var requestId = newRequestId();
     var payload = {};
@@ -155,12 +181,13 @@
       payload[k] = body[k];
     });
     payload.requestId = requestId;
+    var settled = false;
     var listeners = [];
     if (typeof hb.addEventListener === "function") {
       var on = function(type, fn) {
         var handler = function(ev) {
           var data = eventData(ev);
-          if (data && data.requestId === requestId) {
+          if (!settled && data && data.requestId === requestId) {
             fn(data);
           }
         };
@@ -185,13 +212,41 @@
         });
       }
     }
+    var rejectCancelled;
+    var cancelled = new Promise(function(resolve, reject) {
+      rejectCancelled = reject;
+    });
+    cancelled.catch(function() {
+    });
+    function onAbort() {
+      cancel(signal.reason);
+    }
     function cleanup() {
+      settled = true;
+      if (signal && typeof signal.removeEventListener === "function") {
+        signal.removeEventListener("abort", onAbort);
+      }
       if (typeof hb.removeEventListener !== "function") {
         return;
       }
       listeners.forEach(function(l) {
         hb.removeEventListener(l[0], l[1]);
       });
+      listeners = [];
+    }
+    function cancel(reason) {
+      if (settled) {
+        return false;
+      }
+      cleanup();
+      if (opts.notifyServer !== false) {
+        notifyCancel(hb, requestId);
+      }
+      rejectCancelled(abortError(reason));
+      return true;
+    }
+    if (signal && typeof signal.addEventListener === "function") {
+      signal.addEventListener("abort", onAbort);
     }
     var pending;
     try {
@@ -199,13 +254,21 @@
     } catch (err) {
       pending = Promise.reject(err);
     }
-    return pending.then(function(result) {
+    var result = Promise.race([pending, cancelled]).then(function(value) {
       cleanup();
-      return result;
+      return value;
     }, function(err) {
       cleanup();
       throw err;
     });
+    return withCancel(result, cancel, requestId);
+  }
+  function withCancel(promise, cancel, requestId) {
+    promise.cancel = cancel || function() {
+      return false;
+    };
+    promise.requestId = requestId || null;
+    return promise;
   }
   function inlineMarkdown(text) {
     return String(text).split(/(`[^`\n]+`)/).map(function(part, i) {
@@ -392,7 +455,11 @@
       }
       return Promise.resolve(hb.request("/ai/status"));
     },
-    /** Explains a device/plugin error. body: { error, context?, device? } → { text, usage } */
+    /**
+     * Explains a device/plugin error. body: { error, context?, device? } → { text, usage }
+     * opts: { onChunk, onDone, onError, signal, notifyServer = true }; the
+     * returned promise has .cancel() and .requestId.
+     */
     explain: function(body, opts) {
       return aiRequest("/ai/explain", body, opts);
     },
@@ -548,7 +615,8 @@
      * { onChunk, history }) to use another transport; it may resolve with a
      * string or { text }.
      * opts: { label = 'Assistant', context, placeholder, emptyText, onSend }
-     * Returns { send(text?), clear(), messages() }.
+     * onSend also receives ctx.signal (an AbortSignal) for chat.cancel().
+     * Returns { send(text?), cancel(), clear(), messages() }.
      */
     renderChat: function(el, opts) {
       opts = opts || {};
@@ -570,6 +638,9 @@
         if (m.error) {
           html += '<p class="mp-ai-error" role="alert">' + escapeHtml(m.error) + "</p>";
         }
+        if (m.stopped) {
+          html += '<p class="mp-ai-panel-note">Stopped</p>';
+        }
         return '<div class="mp-ai-chat-msg is-assistant"><div class="mp-ai-chat-bubble mp-ai-prose"><span class="mp-ai-sr-only">' + escapeHtml(opts.label || "Assistant") + ": </span>" + html + "</div></div>";
       }
       function paint() {
@@ -588,8 +659,9 @@
         if (context) {
           body.context = context;
         }
-        return ai.ask(body, { onChunk: ctx.onChunk });
+        return ai.ask(body, { onChunk: ctx.onChunk, signal: ctx.signal });
       }
+      var controller = null;
       function send(text) {
         var prompt = String(text == null ? input.value : text).trim();
         if (!prompt || busy) {
@@ -599,7 +671,7 @@
           input.value = "";
         }
         var history = messages.filter(function(m) {
-          return !m.error;
+          return !m.error && !m.stopped;
         }).map(function(m) {
           return { role: m.role, text: m.text };
         });
@@ -608,9 +680,12 @@
         busy = true;
         paint();
         var handler = typeof opts.onSend === "function" ? opts.onSend : defaultSend;
+        controller = typeof AbortController === "function" ? new AbortController() : null;
+        var signal = controller ? controller.signal : void 0;
         return Promise.resolve().then(function() {
           return handler(prompt, {
             history,
+            signal,
             onChunk: function(delta) {
               reply.text += delta == null ? "" : String(delta);
               paint();
@@ -622,12 +697,17 @@
             reply.text = final;
           }
         }, function(err) {
-          reply.error = errorMessage(err, DEFAULT_ERROR);
+          if (err && err.name === "AbortError" || signal && signal.aborted) {
+            reply.stopped = true;
+          } else {
+            reply.error = errorMessage(err, DEFAULT_ERROR);
+          }
         }).then(function() {
           reply.streaming = false;
           busy = false;
+          controller = null;
           paint();
-          return reply.error ? null : reply.text;
+          return reply.error || reply.stopped ? null : reply.text;
         });
       }
       bind(el, "submit", function(ev) {
@@ -644,6 +724,14 @@
       paint();
       return {
         send,
+        /** Stops the reply in progress (aborts the signal passed to onSend / ask). */
+        cancel: function() {
+          if (!controller) {
+            return false;
+          }
+          controller.abort();
+          return true;
+        },
         clear: function() {
           messages = [];
           paint();

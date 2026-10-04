@@ -13,6 +13,7 @@ All notable changes to this project will be documented in this file.
 - **`dist/theme-boot.js`** (~0.4 kB): a same-origin `<head>` script that applies the remembered or system theme before first paint, replacing the inline snippet the README used to recommend.
 - **`.mp-theme-dark` class**: the dark `--mp-*` tokens now also apply under this selector-agnostic class, so hosts whose dark mode is not Bootstrap's `data-bs-theme` (e.g. Glass UI's `body.dark-mode`) can opt in without copying hex values. Under the class alone the host colours (`--mp-ai-surface`, `--mp-ai-fg`, …) are plain Bootstrap-dark values; with `data-bs-theme="dark"` they keep following Bootstrap's variables. The kit's CSS stays unlayered on purpose (a `@layer` would let unlayered Bootstrap override the kit's remaps).
 
+- **Assistant request cancellation.** `MpKit.ai.ask/explain/config` accept `opts.signal` (an `AbortSignal`) and return a promise with `.cancel()` and `.requestId`. Cancelling rejects with an `AbortError`, removes the event listeners (late chunks are ignored) and sends a best-effort `/ai/cancel` request (`notifyServer: false` skips it; failures are ignored). `renderChat()` gains `cancel()` and passes `ctx.signal` to a custom `onSend`.
 - **`mp-ui-kit-copy --only <files>`** copies only the named dist files (comma-separated or repeated); unknown names fail with the list of available files.
 
 ### Changed
