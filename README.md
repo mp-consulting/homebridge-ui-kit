@@ -12,6 +12,8 @@ Provides shared CSS tokens, Bootstrap 5 overrides, and vanilla JS UI components 
 | `dist/kit.js` | Vanilla JS helpers exposed as `window.MpKit` (including `MpKit.ai`) — a classic script |
 | `dist/ai.css` | Standalone build: tokens + Assistant components only, no Bootstrap overrides (for non-plugin apps such as the Glass UI) |
 | `dist/kit.min.css`, `dist/kit.min.js`, `dist/ai.min.css` | Minified builds of the above, each with a `.map` source map |
+| `dist/theme-boot.js` | ~0.4 kB `<head>` script that applies the light/dark theme before first paint (see [Theme](#theme)) |
+| `dist/kit.d.ts`, `dist/kit.d.mts` | TypeScript declarations for the global and the ES module |
 | `dist/kit.mjs` | ES module: `MpKit` (default export) plus named exports (`escapeHtml`, `markdown`, `diffLines`, `StatusBadge`, …); it does not set a global |
 
 Package entry points: `@mp-consulting/homebridge-ui-kit` (the ES module), `@mp-consulting/homebridge-ui-kit/dist/*`
