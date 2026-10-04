@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Assistant components preview</title>
+  <!-- Manual preview only (not published). Open with a static server from the
+       repo root, e.g. `npx serve .` → /examples/ai-preview.html, after `npm run build`. -->
+  <script>
+    (function () {
+      try {
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.dataset.bsTheme = 'dark';
+        }
+      } catch (e) {}
+    })();
+  </script>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+  <link rel="stylesheet" href="../dist/kit.css">
+  <style>
+    .preview-section { margin-bottom: 2.5rem; }
+    .preview-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+  </style>
+</head>
+<body>
+  <div class="container py-4" style="max-width: 760px">
+    <div class="mp-header justify-content-between">
+      <div>
+        <h1 class="mp-header-title">Assistant components</h1>
+        <p class="mp-header-subtitle">Halo tokens, buttons, answer panel, diff, chat and edge glow</p>
+      </div>
+      <button type="button" class="btn btn-outline-secondary btn-sm" id="themeToggle">Toggle theme</button>
+    </div>
+
+    <section class="preview-section">
+      <p class="mp-label">Buttons, badge, thinking</p>
+      <div class="preview-row" id="buttons"></div>
+    </section>
+
+    <section class="preview-section">
+      <p class="mp-label">Halo container</p>
+      <div class="mp-ai-halo p-3">
+        <strong>Content on a neutral surface.</strong>
+        The gradient only draws the ring and the glow, so text contrast is the body contrast.
+      </div>
+    </section>
+
+    <section class="preview-section">
+      <p class="mp-label">Answer panel (streaming)</p>
+      <div class="preview-row mb-2">
+        <button type="button" class="btn btn-sm btn-primary" id="explainBtn">Explain an error</button>
+      </div>
+      <div id="answer"></div>
+    </section>
+
+    <section class="preview-section">
+      <p class="mp-label">Config diff</p>
+      <div id="diff"></div>
+    </section>
+
+    <section class="preview-section">
+      <p class="mp-label">Chat</p>
+      <div id="chat"></div>
+    </section>
+
+    <section class="preview-section">
+      <p class="mp-label">Page edge glow</p>
+      <button type="button" class="btn btn-sm btn-outline-secondary" id="edgeBtn">Toggle edge glow</button>
+    </section>
+  </div>
+
+  <script src="../dist/kit.js"></script>
+  <script>
+    // Mock of @homebridge/plugin-ui-utils: streams a canned answer as ai:chunk events.
+    (function () {
+      var target = new EventTarget();
+      var ANSWER = 'The plugin could not reach the device (**ETIMEDOUT**).\n\n'
+        + '- Check the device is powered and on the same network\n'
+        + '- Confirm the IP address in `config.json`\n\n'
+        + '```json\n{ "host": "192.168.1.40" }\n```\n'
+        + 'Then restart the child bridge.';
+      window.homebridge = {
+        addEventListener: target.addEventListener.bind(target),
+        removeEventListener: target.removeEventListener.bind(target),
+        request: function (path, body) {
+          if (path === '/ai/status') {
+            return Promise.resolve({ enabled: true, provider: 'demo', model: 'demo', capabilities: {} });
+          }
+          var text = path === '/ai/ask' ? 'You asked: "' + body.prompt + '".\n\n' + ANSWER : ANSWER;
+          var parts = text.match(/[\s\S]{1,6}/g);
+          return new Promise(function (resolve) {
+            var i = 0;
+            (function next() {
+              if (i < parts.length) {
+                target.dispatchEvent(new MessageEvent('ai:chunk', { data: { requestId: body.requestId, delta: parts[i] } }));
+                i += 1;
+                setTimeout(next, 30);
+              } else {
+                target.dispatchEvent(new MessageEvent('ai:done', { data: { requestId: body.requestId } }));
+                resolve({ text: text, usage: {} });
+              }
+            })();
+          });
+        },
+      };
+    })();
+
+    document.getElementById('themeToggle').addEventListener('click', function () {
+      var root = document.documentElement;
+      root.dataset.bsTheme = root.dataset.bsTheme === 'dark' ? 'light' : 'dark';
+    });
+
+    document.getElementById('buttons').innerHTML = MpKit.ai.renderButton({ id: 'askBtn' })
+      + MpKit.ai.renderButton({ label: 'Small', size: 'sm' })
+      + MpKit.ai.renderButton({ label: 'Large', size: 'lg' })
+      + '<button type="button" class="mp-ai-button mp-ai-thinking" aria-busy="true" disabled>Working…</button>'
+      + MpKit.ai.renderBadge()
+      + MpKit.ai.renderThinking();
+
+    document.getElementById('explainBtn').addEventListener('click', function () {
+      var answer = MpKit.ai.renderAnswer(document.getElementById('answer'), { title: 'Why is the device offline?' });
+      MpKit.ai.edgeGlow();
+      MpKit.ai.explain({ error: 'ETIMEDOUT' }, { onChunk: answer.append })
+        .then(answer.done, answer.error)
+        .then(function () { MpKit.ai.edgeGlow(false); });
+    });
+    MpKit.ai.renderAnswer(document.getElementById('answer'), {
+      title: 'Static example',
+      streaming: false,
+      text: 'Answers support **bold**, `code`, lists and code blocks.\n\n- One\n- Two',
+    });
+
+    MpKit.ai.renderDiff(document.getElementById('diff'), {
+      before: { platform: 'Demo', name: 'Demo', pollingInterval: 30, devices: [] },
+      after: { platform: 'Demo', name: 'Demo', pollingInterval: 60, devices: [{ id: 'lamp', host: '192.168.1.40' }] },
+      onApply: function () { return new Promise(function (r) { setTimeout(r, 400); }); },
+      onReject: function () {},
+    });
+
+    MpKit.ai.renderChat(document.getElementById('chat'), { context: 'Plugin: demo' });
+
+    var edgeOn = false;
+    document.getElementById('edgeBtn').addEventListener('click', function () {
+      edgeOn = !edgeOn;
+      MpKit.ai.edgeGlow(edgeOn);
+    });
+  </script>
+</body>
+</html>

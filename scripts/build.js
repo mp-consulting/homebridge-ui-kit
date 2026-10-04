@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Concatenates src/*.css into dist/kit.css and copies src/kit.js to dist/kit.js,
-// stamping the package version into both.
+// Concatenates src/*.css into dist/kit.css, builds the standalone dist/ai.css
+// (tokens + Assistant components, no Bootstrap overrides) and copies src/kit.js
+// to dist/kit.js, stamping the package version into each.
 // `--check` verifies the committed dist/ matches src/ without writing.
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync } from 'fs';
@@ -14,11 +15,12 @@ const dist = join(root, 'dist');
 const check = process.argv.includes('--check');
 
 const { version } = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-const cssFiles = ['tokens.css', 'overrides.css', 'components.css'];
+const banner = `/* @mp-consulting/homebridge-ui-kit v${version} */\n\n`;
+const css = files => banner + files.map(f => readFileSync(join(src, f), 'utf8')).join('\n');
 
 const outputs = {
-  'kit.css': `/* @mp-consulting/homebridge-ui-kit v${version} */\n\n`
-    + cssFiles.map(f => readFileSync(join(src, f), 'utf8')).join('\n'),
+  'kit.css': css(['tokens.css', 'overrides.css', 'components.css', 'ai.css']),
+  'ai.css': css(['tokens.css', 'ai.css']),
   'kit.js': readFileSync(join(src, 'kit.js'), 'utf8').replaceAll('__VERSION__', version),
 };
 

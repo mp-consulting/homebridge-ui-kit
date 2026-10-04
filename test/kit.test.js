@@ -167,4 +167,18 @@ describe('dist', () => {
     assert.ok(dist.startsWith(`/* @mp-consulting/homebridge-ui-kit v${version}`));
     assert.ok(!dist.includes('__VERSION__'));
   });
+
+  test('kit.css bundles everything; ai.css is tokens + Assistant only', () => {
+    const kitCss = readFileSync(join(root, 'dist', 'kit.css'), 'utf8');
+    const aiCss = readFileSync(join(root, 'dist', 'ai.css'), 'utf8');
+    for (const css of [kitCss, aiCss]) {
+      assert.match(css, /--mp-ai-1: #BC82F3/);
+      assert.match(css, /@property --mp-ai-angle/);
+      assert.match(css, /\.mp-ai-halo/);
+      assert.match(css, /prefers-reduced-motion/);
+    }
+    assert.match(kitCss, /\.btn-primary/);
+    assert.match(kitCss, /\.mp-footer/);
+    assert.doesNotMatch(aiCss, /\.btn-primary|\.spinner-border|\.mp-footer/);
+  });
 });

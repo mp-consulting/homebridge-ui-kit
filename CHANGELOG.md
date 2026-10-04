@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.0] - 2026-10-04
+
+### Added
+- **Assistant (AI) components.** Halo design tokens in `tokens.css` (`--mp-ai-1` … `--mp-ai-6`, `--mp-ai-stops`, `--mp-ai-gradient`, `@property --mp-ai-angle`, accent text, surface, glow strengths with stronger dark-mode values) and a new `ai.css`: `.mp-ai-halo`, `.mp-ai-button`, `.mp-ai-badge`, `.mp-ai-thinking`, `.mp-ai-panel` (streaming caret), `.mp-ai-chat`, `.mp-ai-diff` (Apply / Reject) and `.mp-ai-edge-glow`. Text never sits on the gradient; `prefers-reduced-motion` gives a static gradient with no pulse, and forced-colours mode falls back to plain outlines.
+- **`MpKit.ai`**: `status()`, `explain()`, `ask()` and `config()` call the plugin's `/ai/*` routes (from `@mp-consulting/homebridge-ai-kit`) with a generated `requestId` and stream `ai:chunk` events to `onChunk`; render helpers `renderButton`, `renderBadge`, `renderThinking`, `renderAnswer` (streaming, safe markdown subset), `renderDiff` (LCS line diff), `renderChat` and `edgeGlow`, plus `markdown()` and `diffLines()`. All text is HTML-escaped.
+- **`dist/ai.css`**: tokens + Assistant components without Bootstrap overrides, for apps that do not use the plugin kit (e.g. the Glass UI). `dist/kit.css` still contains everything.
+- **`mp-ui-kit-copy` CLI** copies `dist/` into `homebridge-ui/public/lib/` (or `--dest <dir>`); `--vendor` also copies Bootstrap and Bootstrap Icons from the plugin's `node_modules` in the layout the plugins' `copy:ui-assets` scripts use, so they can switch to it.
+- `exports` map: `@mp-consulting/homebridge-ui-kit/dist/*` plus `/kit.css`, `/kit.js`, `/ai.css` shortcuts.
+- `examples/ai-preview.html` (not published) previews the Assistant components in light and dark mode.
+
+### Fixed
+- README told plugins to copy the kit into `homebridge-ui/public/` while every plugin (and the 1.0.1 notes) use `homebridge-ui/public/lib/`; the integration guide, `.gitignore` and ESLint snippets now use `lib/`.
+
 ## [1.1.1] - 2026-10-03
 
 ### Changed

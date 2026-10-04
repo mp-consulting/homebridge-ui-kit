@@ -24,6 +24,44 @@
   /* Shape */
   --mp-radius: 0.5rem;
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
+
+  /* Assistant (AI) halo palette. Only ever used for borders, glows and
+     decorative dots: text never sits on the gradient. */
+  --mp-ai-1: #BC82F3;
+  --mp-ai-2: #F5B9EA;
+  --mp-ai-3: #8D9FFF;
+  --mp-ai-4: #FF6778;
+  --mp-ai-5: #FFBA71;
+  --mp-ai-6: #C686FF;
+  --mp-ai-stops: var(--mp-ai-1), var(--mp-ai-2), var(--mp-ai-3), var(--mp-ai-4),
+    var(--mp-ai-5), var(--mp-ai-6), var(--mp-ai-1);
+  /* Halo gradient. Custom properties resolve where they are declared, so this
+     token is static (angle 0) when used as-is; the AI components rebuild it
+     from --mp-ai-stops on the animated element so it rotates (see ai.css). */
+  --mp-ai-gradient: conic-gradient(from var(--mp-ai-angle), var(--mp-ai-stops));
+  --mp-ai-gradient-linear: linear-gradient(90deg, var(--mp-ai-stops));
+  --mp-ai-text: #7e22ce;               /* accent text; 7.1:1 on white */
+  --mp-ai-surface: var(--bs-body-bg, #fff);
+  --mp-ai-border-width: 2px;
+  --mp-ai-glow-blur: 12px;
+  --mp-ai-glow-opacity: 0.45;
+  --mp-ai-edge-glow-opacity: 0.55;
+  --mp-ai-duration: 4s;
+  --mp-ai-edge-width: 28px;
+
+  /* Assistant diff lines (text/background pairs meet WCAG AA) */
+  --mp-ai-diff-add-bg: #dcfce7;
+  --mp-ai-diff-add-text: #14532d;
+  --mp-ai-diff-del-bg: #fee2e2;
+  --mp-ai-diff-del-text: #7f1d1d;
+}
+
+/* Animatable angle for the rotating halo. Browsers without @property simply
+   show a static gradient. */
+@property --mp-ai-angle {
+  syntax: '<angle>';
+  inherits: false;
+  initial-value: 0deg;
 }
 
 [data-bs-theme="dark"] {
@@ -31,4 +69,12 @@
   --mp-surface: rgba(255, 255, 255, 0.03);
   --mp-border: rgba(255, 255, 255, 0.08);
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
+  --mp-ai-text: #d8b4fe;               /* 9.6:1 on #212529 */
+  --mp-ai-surface: var(--bs-body-bg, #212529);
+  --mp-ai-glow-opacity: 0.7;
+  --mp-ai-edge-glow-opacity: 0.8;
+  --mp-ai-diff-add-bg: rgba(34, 197, 94, 0.16);
+  --mp-ai-diff-add-text: #bbf7d0;
+  --mp-ai-diff-del-bg: rgba(239, 68, 68, 0.18);
+  --mp-ai-diff-del-text: #fecaca;
 }
