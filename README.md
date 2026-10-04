@@ -24,16 +24,23 @@ import { markdown, diffLines, escapeHtml } from '@mp-consulting/homebridge-ui-ki
 
 ## Integration
 
-### 1. Install as a dev dependency
+> **Serve everything from the plugin.** The Homebridge UI loads a plugin's custom UI under a
+> content-security policy that only allows **same-origin** scripts and styles, so CDN `<script>` /
+> `<link>` tags are blocked. Install the kit *and* Bootstrap as dev dependencies and let
+> `mp-ui-kit-copy --vendor` copy them into `homebridge-ui/public/lib/`, then reference the local
+> `lib/` paths as shown below.
+
+### 1. Install as dev dependencies
 
 ```bash
-npm install --save-dev @mp-consulting/homebridge-ui-kit
+npm install --save-dev @mp-consulting/homebridge-ui-kit bootstrap@5.3 bootstrap-icons@1.11
 ```
 
 ### 2. Add the copy script to `package.json`
 
-The package ships a zero-dependency CLI, `mp-ui-kit-copy`, that copies `dist/` into
-`homebridge-ui/public/lib/` of the plugin it runs in:
+The package ships a zero-dependency CLI, `mp-ui-kit-copy`, that copies the kit's browser files into
+`homebridge-ui/public/lib/` of the plugin it runs in. With `--vendor` it also copies Bootstrap and
+Bootstrap Icons from your `node_modules`, so the UI needs nothing from a CDN:
 
 ```json
 {
@@ -46,19 +53,21 @@ The package ships a zero-dependency CLI, `mp-ui-kit-copy`, that copies `dist/` i
 
 | Option | Effect |
 |--------|--------|
-| *(none)* | Copies `kit.css`, `kit.js` and `ai.css` into `homebridge-ui/public/lib/` |
+| *(none)* | Copies the kit's browser files (`kit.css`, `kit.js`, `ai.css`, their `.min` variants, …) into `homebridge-ui/public/lib/` |
 | `--dest <dir>` | Copies into `<dir>` instead (relative to the current directory) |
 | `--vendor` | Also copies `bootstrap.min.css`, `bootstrap.bundle.min.js`, `bootstrap-icons.min.css` and `fonts/bootstrap-icons.woff(2)` from the plugin's own `node_modules` (packages that are not installed are skipped) and strips their `sourceMappingURL` comments, producing the same `lib/` layout as the plugins' previous `copy:ui-assets` scripts |
 
 Without the CLI, the equivalent is:
 
 ```bash
-mkdir -p homebridge-ui/public/lib && cp node_modules/@mp-consulting/homebridge-ui-kit/dist/* homebridge-ui/public/lib/
+mkdir -p homebridge-ui/public/lib && cp node_modules/@mp-consulting/homebridge-ui-kit/dist/*.{css,js} homebridge-ui/public/lib/
 ```
 
 ### 3. Reference in `index.html`
 
-The plugin's `homebridge-ui/public/index.html` must be a full HTML document. Load Bootstrap 5.3 (from CDN as below, or `lib/bootstrap.min.css` when you use `--vendor`), then `lib/kit.css` and your styles in `<head>`, and Bootstrap JS + `kit.js` + your app script at the end of `<body>`:
+The plugin's `homebridge-ui/public/index.html` must be a full HTML document. Load Bootstrap, then
+`lib/kit.css` and your styles in `<head>`, and Bootstrap JS + `kit.js` + your app script at the end
+of `<body>` — all from `lib/`:
 
 ```html
 <!DOCTYPE html>
@@ -75,22 +84,30 @@ The plugin's `homebridge-ui/public/index.html` must be a full HTML document. Loa
       } catch(e) {}
     })();
   </script>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
+  <link rel="stylesheet" href="lib/bootstrap.min.css">
+  <link rel="stylesheet" href="lib/bootstrap-icons.min.css">
   <link rel="stylesheet" href="lib/kit.css">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <!-- your UI here -->
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+  <script src="lib/bootstrap.bundle.min.js"></script>
   <script src="lib/kit.js"></script>
   <script src="app.js"></script>
 </body>
 </html>
 ```
 
-The `integrity` hashes pin the exact CDN files; update them if you change a version (jsDelivr shows the SRI hash for each file).
+> **Outside Homebridge** (a standalone page or a prototype without that CSP) you can load Bootstrap
+> from a CDN instead. Pin the files with SRI hashes, and update them if you change a version
+> (jsDelivr shows the hash for each file):
+>
+> ```html
+> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+> <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" integrity="sha384-XGjxtQfXaH2tnPFa9x+ruJTuLE3Aa6LhHSWRr1XeTyhezb4abCG4ccI5AkVDxqC+" crossorigin="anonymous">
+> <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js" integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz" crossorigin="anonymous"></script>
+> ```
 
 The early inline script applies `data-bs-theme="dark"` from the system preference before any CSS loads, preventing a flash of wrong theme. In your app script, also apply the Homebridge user's saved theme setting:
 
