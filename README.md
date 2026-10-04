@@ -524,7 +524,7 @@ contents. Releases are prepared by release-please (`release-please-config.json`,
 conventional commits; merging it creates the GitHub release and then starts `publish.yml` on the
 new tag with a `workflow_dispatch` (npm trusted publishing, which adds provenance automatically). No
 extra secret is needed: the default `GITHUB_TOKEN` may start a `workflow_dispatch`, and a release
-published by hand still runs `publish.yml` through its `release` trigger.
+published by hand still runs `publish.yml` through its `release` trigger. Version 1.3.0 was released by hand (its notes predate release-please); release-please takes over from there.
 
 ## License
 

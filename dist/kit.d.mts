@@ -1,4 +1,4 @@
-/* @mp-consulting/homebridge-ui-kit v1.2.2 — declarations for the ES module (dist/kit.mjs).
+/* @mp-consulting/homebridge-ui-kit v1.3.0 — declarations for the ES module (dist/kit.mjs).
    The ES module does not set the MpKit global. */
 
 import type { MpKitApi } from './kit.js';

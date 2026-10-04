@@ -1,4 +1,4 @@
-/* @mp-consulting/homebridge-ui-kit v1.2.2 — TypeScript declarations.
+/* @mp-consulting/homebridge-ui-kit v1.3.0 — TypeScript declarations.
    Classic script (dist/kit.js): `MpKit` is a global (also `window.MpKit`).
    Reference it with:  /// <reference types="@mp-consulting/homebridge-ui-kit/kit.js" />
    or:                 import type {} from '@mp-consulting/homebridge-ui-kit/kit.js';

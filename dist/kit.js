@@ -1,4 +1,4 @@
-/* @mp-consulting/homebridge-ui-kit v1.2.2
+/* @mp-consulting/homebridge-ui-kit v1.3.0
    Brand design system for Homebridge plugins
    https://github.com/mp-consulting/homebridge-ui-kit */
 (() => {
@@ -2254,7 +2254,7 @@
   };
 
   // src/js/index.js
-  var version = "1.2.2";
+  var version = "1.3.0";
   var MpKit = {
     version,
     escapeHtml,
