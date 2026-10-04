@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.1] - 2026-10-04
+
+### Fixed
+
+- **Assistant answer panel layout.** `.mp-ai-panel` is now `width: 100%` with `box-sizing: border-box` and `min-width: 0`, so it fills its slot and no longer forces a flex or grid parent wider (long words and URLs wrap). The panel header wraps: the title sits next to the "Assistant" badge only when there is room for it, otherwise it moves onto its own full-width line, so long titles are no longer squeezed into a narrow column and broken word by word.
+- `examples/ai-preview.html` shows the panel in a device-list row (full-width slot) and in a narrow column.
+
 ## [1.2.0] - 2026-10-04
 
 ### Added
