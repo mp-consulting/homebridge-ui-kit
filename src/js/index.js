@@ -12,6 +12,7 @@ import { Form, CopyButton, copyText } from './form.js';
 import { installDelegates } from './delegates.js';
 import { DeviceList, Skeleton } from './devices.js';
 import { LogViewer, stripAnsi } from './log.js';
+import { Pairing, Auth, Steps, formatPin } from './pairing.js';
 
 export const version = __VERSION__;
 
@@ -35,6 +36,9 @@ export const MpKit = {
   Skeleton,
   LogViewer,
   stripAnsi,
+  Pairing,
+  Auth,
+  Steps,
   ai,
 };
 
@@ -42,7 +46,8 @@ installDelegates();
 
 export {
   escapeHtml, safeUrl, announce, StatusBadge, EmptyState, Loading, View, Footer, Tabs, Theme, Toast, confirm,
-  Form, CopyButton, copyText as copy, DeviceList, Skeleton, LogViewer, stripAnsi, ai, markdown, diffLines,
+  Form, CopyButton, copyText as copy, DeviceList, Skeleton, LogViewer, stripAnsi,
+  Pairing, Auth, Steps, formatPin, ai, markdown, diffLines,
 };
 
 export default MpKit;

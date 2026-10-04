@@ -280,6 +280,34 @@ Default device cards show `name` (or `displayName`), `subtitle`, `iconClass` and
 yours included — is activated by Enter and Space. The log's live region is off by default
 (a busy log would flood screen readers); pass `live: 'polite'` for low-volume logs.
 
+### Pairing and sign-in
+
+```js
+// HomeKit setup code: XXX-XX-XXX, read digit by digit by screen readers, with
+// a Copy button. The kit does not generate QR codes — pass an image or SVG.
+el.innerHTML = MpKit.Pairing.pin({ pin: '03145154', qrSrc: 'qr.png' }); // http(s), path or data:image/*
+MpKit.Pairing.renderPin(el, { pin, qr: svgElementFromYourServer });       // or mount an <svg>/<img>
+MpKit.Pairing.formatPin('03145154');                                      // '031-45-154'
+
+// OAuth device-code step card: open URL, code with Copy, polling state, success/error
+const signIn = MpKit.Auth.deviceCode('#signin', {
+  url: res.verificationUri, code: res.userCode, expiresIn: res.expiresIn,
+  poll: () => homebridge.request('/auth/poll'),  // true | { done } | { error } | { interval }
+  interval: 5000,
+  onSuccess: () => MpKit.Steps /* … */, onRetry: () => startAgain(),
+});
+signIn.setState('error', 'Access denied');       // or drive the state yourself (no poll)
+
+// Multi-step wizard: .mp-steps progress (aria-current="step") + one visible panel;
+// focus moves to the new panel's heading and "Step 2 of 3: Devices" is announced.
+const wizard = MpKit.Steps.create('#steps', {
+  steps: [{ title: 'Account', panel: '#step-login' }, { title: 'Devices', panel: '#step-devices' },
+    { title: 'Done', panel: '#step-done' }],
+  onChange: (index, step) => {},
+});
+wizard.next(); wizard.prev(); wizard.go(2);
+```
+
 All text passed to the helpers is HTML-escaped, so it is safe to pass device names or other
 values that came from the network. To include markup, build the element yourself.
 
