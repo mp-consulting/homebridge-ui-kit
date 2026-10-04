@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.2.2] - 2026-10-04
+
+### Fixed
+
+- **Assistant diff header in narrow panels.** `.mp-ai-diff-header` now wraps like the answer panel header: the title sits next to the "Assistant" badge only when there is room for about 12rem of it, otherwise it moves onto its own line below the badge (with the +/− stats at its end), so in a ~300px column (such as a plugin's Assistant card) it is no longer squeezed and broken word by word. The badge and stats never shrink, and long titles wrap instead of overflowing. Normal widths are unchanged.
+- `examples/ai-preview.html` also shows the diff in a narrow column.
+
 ## [1.2.1] - 2026-10-04
 
 ### Fixed
