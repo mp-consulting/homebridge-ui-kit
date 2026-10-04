@@ -509,8 +509,9 @@ npm run test:visual:update    # refresh the baselines after an intentional visua
 ```
 
 Screenshot baselines live in `e2e/__screenshots__/<platform>/<project>/` because font rendering
-differs per OS. CI (Linux) writes missing Linux baselines instead of failing and uploads them as
-the `linux-screenshots` artifact; commit them to start comparing on CI. The axe-core (WCAG 2.2 AA)
+differs per OS. CI compares against the Linux baselines inside the
+`mcr.microsoft.com/playwright:v1.63.0-noble` image; refresh them with the same image (the command is
+in `.github/workflows/node.js.yml`) and keep its tag in step with `@playwright/test`. The axe-core (WCAG 2.2 AA)
 and keyboard checks always run. Append `?static&theme=dark&dir=rtl` to the gallery URL to preview a
 combination.
 

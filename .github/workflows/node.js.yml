@@ -54,6 +54,11 @@ jobs:
   visual:
     name: Visual and accessibility tests
     runs-on: ubuntu-latest
+    # The same image the linux baselines were made with: fonts and Chromium
+    # match exactly. Keep its tag in step with @playwright/test.
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --ipc=host
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -71,23 +76,13 @@ jobs:
           npm run build
           npm run examples
 
-      - name: Install Chromium
-        run: npx playwright install --with-deps chromium
-
-      # Baselines are per platform (e2e/__screenshots__/<platform>/). Missing
-      # linux baselines are written instead of failing; commit them from the
-      # uploaded artifact to start comparing. axe-core and keyboard checks
-      # always run.
+      # Baselines are per platform (e2e/__screenshots__/<platform>/). To update
+      # the linux ones, run the same image locally:
+      #   docker run --rm --ipc=host -v "$PWD":/work -w /work -v /work/node_modules \
+      #     mcr.microsoft.com/playwright:v1.63.0-noble \
+      #     bash -lc "npm ci && npm run build && npm run examples && npx playwright test --update-snapshots"
       - name: Playwright (screenshots, axe-core, keyboard)
-        run: npx playwright test --update-snapshots=missing
-
-      - name: Upload screenshots
-        if: always()
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
-        with:
-          name: linux-screenshots
-          path: e2e/__screenshots__/linux/
-          if-no-files-found: ignore
+        run: npx playwright test
 
       - name: Upload report
         if: failure()
