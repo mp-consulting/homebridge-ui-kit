@@ -6,6 +6,8 @@ import { StatusBadge, EmptyState, Loading, View, Footer } from './core.js';
 import { ai, markdown, diffLines } from './ai.js';
 import { Theme } from './theme.js';
 import { Tabs } from './tabs.js';
+import { Toast } from './toast.js';
+import { confirm } from './dialog.js';
 
 export const version = __VERSION__;
 
@@ -20,12 +22,14 @@ export const MpKit = {
   Footer,
   Tabs,
   Theme,
+  Toast,
+  confirm,
   ai,
 };
 
 export {
-  escapeHtml, safeUrl, announce, StatusBadge, EmptyState, Loading, View, Footer, Tabs, Theme, ai,
-  markdown, diffLines,
+  escapeHtml, safeUrl, announce, StatusBadge, EmptyState, Loading, View, Footer, Tabs, Theme, Toast, confirm,
+  ai, markdown, diffLines,
 };
 
 export default MpKit;

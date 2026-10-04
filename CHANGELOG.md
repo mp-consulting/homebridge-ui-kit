@@ -15,6 +15,8 @@ All notable changes to this project will be documented in this file.
 
 - **Assistant request cancellation.** `MpKit.ai.ask/explain/config` accept `opts.signal` (an `AbortSignal`) and return a promise with `.cancel()` and `.requestId`. Cancelling rejects with an `AbortError`, removes the event listeners (late chunks are ignored) and sends a best-effort `/ai/cancel` request (`notifyServer: false` skips it; failures are ignored). `renderChat()` gains `cancel()` and passes `ctx.signal` to a custom `onSend`.
 - **`MpKit.Tabs.init()`**: roles, `aria-selected`, roving `tabindex`, Arrow/Home/End keys (mirrored in RTL), automatic or manual activation; panels from `data-mp-view`, `aria-controls`, `data-bs-target` or `href`.
+- **`MpKit.Toast`** (`success` / `error` / `warning` / `info` / `show`): uses `homebridge.toast.*` inside the plugin UI and falls back to a Bootstrap-style `.mp-toast` (escaped text, `role="status"` or `"alert"`, auto-dismiss that pauses on hover/focus, close button) elsewhere or with `{ local: true }`.
+- **`MpKit.confirm(opts)`**: an accessible modal (`role="alertdialog"`, `aria-modal`, labelled and described, focus trapped and restored, page behind made `inert`, Escape/backdrop cancel) returning `Promise<boolean>`; `danger: true` uses a red confirm button and focuses Cancel first.
 - **`MpKit.announce(message, politeness)`** and the `.mp-sr-only` utility.
 - Tokens `--mp-text-subtle` and `--mp-focus-ring`.
 - **`mp-ui-kit-copy --only <files>`** copies only the named dist files (comma-separated or repeated); unknown names fail with the list of available files.

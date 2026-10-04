@@ -64,6 +64,9 @@
     }, 30);
   }
   var FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+  function focusables(el) {
+    return Array.from(el.querySelectorAll(FOCUSABLE)).filter((n) => !n.hidden && !n.closest("[hidden]"));
+  }
   function focusElement(el) {
     if (!el || typeof el.focus !== "function") {
       return;
@@ -812,8 +815,8 @@
      * Shows (default) or hides a fixed glow around the page edges, e.g. while
      * the Assistant works. Returns the element.
      */
-    edgeGlow: function(show) {
-      if (show === false) {
+    edgeGlow: function(show2) {
+      if (show2 === false) {
         if (edgeEl) {
           edgeEl.hidden = true;
         }
@@ -1156,6 +1159,146 @@
     }
   };
 
+  // src/js/toast.js
+  var TYPES = ["success", "error", "warning", "info"];
+  var DURATION = { success: 5e3, info: 5e3, warning: 7e3, error: 8e3 };
+  var ICON = { success: "✓", info: "i", warning: "!", error: "✕" };
+  var container = null;
+  function ensureContainer(d) {
+    if (!container || !container.isConnected) {
+      container = d.createElement("div");
+      container.className = "mp-toast-container";
+      d.body.appendChild(container);
+    }
+    return container;
+  }
+  function show(type, message, opts) {
+    if (TYPES.indexOf(type) < 0) {
+      type = "info";
+    }
+    opts = typeof opts === "string" ? { title: opts } : opts || {};
+    const text = String(message == null ? "" : message);
+    const hb = hbClient();
+    if (!opts.local && hb && hb.toast && typeof hb.toast[type] === "function") {
+      hb.toast[type](text, opts.title);
+      return { close() {
+      }, element: null, native: true };
+    }
+    const d = doc();
+    if (!d || !d.body) {
+      return { close() {
+      }, element: null, native: false };
+    }
+    const el = d.createElement("div");
+    el.className = "mp-toast mp-toast-" + type;
+    el.setAttribute("role", type === "error" || type === "warning" ? "alert" : "status");
+    el.setAttribute("aria-atomic", "true");
+    el.innerHTML = '<span class="mp-toast-icon" aria-hidden="true">' + ICON[type] + '</span><div class="mp-toast-body">' + (opts.title ? '<p class="mp-toast-title">' + escapeHtml(opts.title) + "</p>" : "") + '<p class="mp-toast-message">' + escapeHtml(text) + '</p></div><button type="button" class="mp-toast-close" aria-label="Close">×</button>';
+    ensureContainer(d).appendChild(el);
+    let timer = null;
+    let closed = false;
+    const duration = opts.duration === void 0 ? DURATION[type] : Number(opts.duration) || 0;
+    function close() {
+      if (closed) {
+        return;
+      }
+      closed = true;
+      clearTimeout(timer);
+      el.remove();
+    }
+    function arm() {
+      clearTimeout(timer);
+      if (duration > 0) {
+        timer = setTimeout(close, duration);
+      }
+    }
+    el.addEventListener("mouseenter", () => clearTimeout(timer));
+    el.addEventListener("mouseleave", arm);
+    el.addEventListener("focusin", () => clearTimeout(timer));
+    el.addEventListener("focusout", arm);
+    el.querySelector(".mp-toast-close").addEventListener("click", close);
+    arm();
+    return { close, element: el, native: false };
+  }
+  var Toast = {
+    show,
+    success: (message, opts) => show("success", message, opts),
+    error: (message, opts) => show("error", message, opts),
+    warning: (message, opts) => show("warning", message, opts),
+    info: (message, opts) => show("info", message, opts)
+  };
+
+  // src/js/dialog.js
+  function confirm(opts) {
+    opts = typeof opts === "string" ? { message: opts } : opts || {};
+    const d = doc();
+    if (!d || !d.body) {
+      return Promise.resolve(false);
+    }
+    const titleId = uid("mp-dialog-title");
+    const messageId = uid("mp-dialog-message");
+    const danger = !!opts.danger;
+    const backdrop = d.createElement("div");
+    backdrop.className = "mp-dialog-backdrop";
+    backdrop.innerHTML = '<div class="mp-dialog' + (danger ? " mp-dialog-danger" : "") + '" role="alertdialog" aria-modal="true" aria-labelledby="' + titleId + '"' + (opts.message ? ' aria-describedby="' + messageId + '"' : "") + '><h2 class="mp-dialog-title" id="' + titleId + '">' + escapeHtml(opts.title || "Are you sure?") + "</h2>" + (opts.message ? '<p class="mp-dialog-message" id="' + messageId + '">' + escapeHtml(opts.message) + "</p>" : "") + '<div class="mp-dialog-actions"><button type="button" class="btn btn-outline-secondary" data-mp-dialog="cancel">' + escapeHtml(opts.cancelLabel || "Cancel") + '</button><button type="button" class="btn ' + (danger ? "btn-danger" : "btn-primary") + '" data-mp-dialog="confirm">' + escapeHtml(opts.confirmLabel || "Confirm") + "</button></div></div>";
+    const dialog = backdrop.firstChild;
+    const previous = d.activeElement;
+    const inerted = Array.from(d.body.children).filter((n) => !n.hasAttribute("inert") && !n.hasAttribute("data-mp-live") && !n.classList.contains("mp-toast-container"));
+    inerted.forEach((n) => n.setAttribute("inert", ""));
+    d.body.appendChild(backdrop);
+    d.body.classList.add("mp-dialog-open");
+    return new Promise((resolve) => {
+      function finish(result) {
+        d.removeEventListener("keydown", onKey, true);
+        backdrop.remove();
+        inerted.forEach((n) => n.removeAttribute("inert"));
+        if (!d.querySelector(".mp-dialog-backdrop")) {
+          d.body.classList.remove("mp-dialog-open");
+        }
+        if (previous && typeof previous.focus === "function" && previous.isConnected) {
+          try {
+            previous.focus({ preventScroll: true });
+          } catch {
+            previous.focus();
+          }
+        }
+        resolve(result);
+      }
+      function onKey(ev) {
+        if (ev.key === "Escape") {
+          ev.preventDefault();
+          ev.stopPropagation();
+          finish(false);
+        } else if (ev.key === "Tab") {
+          const items = focusables(dialog);
+          if (!items.length) {
+            return;
+          }
+          const first = items[0];
+          const last = items[items.length - 1];
+          const active = d.activeElement;
+          if (ev.shiftKey && (active === first || !dialog.contains(active))) {
+            ev.preventDefault();
+            last.focus();
+          } else if (!ev.shiftKey && (active === last || !dialog.contains(active))) {
+            ev.preventDefault();
+            first.focus();
+          }
+        }
+      }
+      backdrop.addEventListener("click", (ev) => {
+        const action = ev.target.closest && ev.target.closest("[data-mp-dialog]");
+        if (action) {
+          finish(action.getAttribute("data-mp-dialog") === "confirm");
+        } else if (ev.target === backdrop) {
+          finish(false);
+        }
+      });
+      d.addEventListener("keydown", onKey, true);
+      dialog.querySelector('[data-mp-dialog="' + (danger ? "cancel" : "confirm") + '"]').focus();
+    });
+  }
+
   // src/js/index.js
   var version = "1.2.2";
   var MpKit = {
@@ -1169,6 +1312,8 @@
     Footer,
     Tabs,
     Theme,
+    Toast,
+    confirm,
     ai
   };
 

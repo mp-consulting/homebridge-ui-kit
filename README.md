@@ -193,6 +193,17 @@ MpKit.View.show('viewId', { focus: false, announce: 'Custom message' })
 const tabs = MpKit.Tabs.init('#tabs', { activation: 'auto', onChange: (tab, index, panel) => {} });
 tabs.select(1);
 
+// Toasts: Homebridge's own toasts inside the plugin UI, a Bootstrap-style
+// fallback (.mp-toast, escaped text, role="status"/"alert") elsewhere
+MpKit.Toast.success('Config saved');            // also .error / .warning / .info
+MpKit.Toast.error('Login failed', 'Account');   // optional title
+MpKit.Toast.info('Local only', { title, duration: 0, local: true }); // 0 = until closed
+
+// Accessible confirmation dialog → Promise<boolean> (Escape/backdrop = false;
+// focus is trapped and restored; the danger variant focuses Cancel first)
+if (await MpKit.confirm({ title: 'Remove device?', message: 'This cannot be undone.',
+  confirmLabel: 'Remove', danger: true })) { /* … */ }
+
 // Screen-reader announcement through a shared, visually hidden live region
 MpKit.announce('Settings saved');          // polite
 MpKit.announce('Connection lost', 'assertive');

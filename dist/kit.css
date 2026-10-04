@@ -404,10 +404,159 @@
   user-select: none;
 }
 
+/* ── Toasts (fallback outside Homebridge) ───────────────── */
+
+.mp-toast-container {
+  position: fixed;
+  inset-block-end: 1rem;
+  inset-inline-end: 1rem;
+  z-index: 1095;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: min(22rem, calc(100vw - 2rem));
+  pointer-events: none;
+}
+
+.mp-toast {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.625rem;
+  padding: 0.75rem 0.875rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-inline-start: 4px solid var(--mp-toast-accent, var(--mp-primary));
+  border-radius: var(--mp-radius);
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #212529);
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+  font-size: 0.875rem;
+  pointer-events: auto;
+  animation: mp-toast-in 0.2s ease-out;
+}
+
+.mp-toast-success { --mp-toast-accent: var(--bs-success, #198754); }
+.mp-toast-error { --mp-toast-accent: var(--bs-danger, #dc3545); }
+.mp-toast-warning { --mp-toast-accent: var(--bs-warning, #ffc107); }
+.mp-toast-info { --mp-toast-accent: var(--mp-primary); }
+
+.mp-toast-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 1.25rem;
+  height: 1.25rem;
+  border-radius: 50%;
+  background: var(--mp-toast-accent);
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.mp-toast-warning .mp-toast-icon {
+  color: #000;
+}
+
+.mp-toast-body {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.mp-toast-title {
+  margin: 0 0 0.125rem;
+  font-weight: 600;
+}
+
+.mp-toast-message {
+  margin: 0;
+}
+
+.mp-toast-close,
+.mp-icon-button {
+  flex: none;
+  padding: 0 0.25rem;
+  border: 0;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--bs-secondary-color, #6c757d);
+  font-size: 1.25rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.mp-toast-close:hover {
+  color: var(--bs-body-color, #212529);
+}
+
+.mp-toast-close:focus-visible,
+.mp-icon-button:focus-visible {
+  outline: 2px solid var(--mp-focus-ring);
+  outline-offset: 1px;
+}
+
+@keyframes mp-toast-in {
+  from { opacity: 0; transform: translateY(0.5rem); }
+}
+
+/* ── Confirm dialog ─────────────────────────────────────── */
+
+.mp-dialog-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 1100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.5);
+  animation: mp-fade-in 0.15s ease-out;
+}
+
+.mp-dialog {
+  width: min(28rem, 100%);
+  padding: 1.25rem;
+  border: 1px solid var(--bs-border-color, #dee2e6);
+  border-radius: var(--mp-radius);
+  background: var(--bs-body-bg, #fff);
+  color: var(--bs-body-color, #212529);
+  box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+}
+
+.mp-dialog-title {
+  margin: 0 0 0.5rem;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.mp-dialog-message {
+  margin: 0;
+  color: var(--bs-secondary-color, #6c757d);
+}
+
+.mp-dialog-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+
+.mp-dialog-open {
+  overflow: hidden;
+}
+
+@keyframes mp-fade-in {
+  from { opacity: 0; }
+}
+
 /* ── Reduced motion ─────────────────────────────────────── */
 
 @media (prefers-reduced-motion: reduce) {
-  .mp-status-checking {
+  .mp-status-checking,
+  .mp-toast,
+  .mp-dialog-backdrop {
     animation: none;
   }
 
