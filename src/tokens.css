@@ -42,6 +42,15 @@
   --mp-ai-gradient-linear: linear-gradient(90deg, var(--mp-ai-stops));
   --mp-ai-text: #7e22ce;               /* accent text; 7.1:1 on white */
   --mp-ai-surface: var(--bs-body-bg, #fff);
+  /* Colours the AI components take from the host. They default to Bootstrap's,
+     and are repeated in the dark block so they resolve on the element that
+     switches theme. A host with its own theming (Glass UI) overrides them. */
+  --mp-ai-fg: var(--bs-body-color, #212529);
+  --mp-ai-fg-muted: var(--bs-secondary-color, #6c757d);
+  --mp-ai-bg: var(--bs-body-bg, transparent);
+  --mp-ai-border-color: var(--bs-border-color, #dee2e6);
+  --mp-ai-success-text: var(--bs-success-text-emphasis, #0a3622);
+  --mp-ai-danger-text: var(--bs-danger-text-emphasis, #b02a37);
   --mp-ai-border-width: 2px;
   --mp-ai-glow-blur: 12px;
   --mp-ai-glow-opacity: 0.45;
@@ -71,6 +80,12 @@
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.3);
   --mp-ai-text: #d8b4fe;               /* 9.6:1 on #212529 */
   --mp-ai-surface: var(--bs-body-bg, #212529);
+  --mp-ai-fg: var(--bs-body-color, #dee2e6);
+  --mp-ai-fg-muted: var(--bs-secondary-color, rgba(222, 226, 230, 0.75));
+  --mp-ai-bg: var(--bs-body-bg, transparent);
+  --mp-ai-border-color: var(--bs-border-color, #495057);
+  --mp-ai-success-text: var(--bs-success-text-emphasis, #75b798);
+  --mp-ai-danger-text: var(--bs-danger-text-emphasis, #ea868f);
   --mp-ai-glow-opacity: 0.7;
   --mp-ai-edge-glow-opacity: 0.8;
   --mp-ai-diff-add-bg: rgba(34, 197, 94, 0.16);

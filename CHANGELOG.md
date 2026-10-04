@@ -5,6 +5,8 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0] - 2026-10-04
 
 ### Added
+
+- **AI colour tokens** `--mp-ai-fg`, `--mp-ai-fg-muted`, `--mp-ai-bg`, `--mp-ai-border-color`, `--mp-ai-success-text` and `--mp-ai-danger-text`. The AI components read their text, border and status colours from these instead of Bootstrap's variables directly, so a host whose dark mode does not switch Bootstrap's colours (such as Homebridge Glass UI) can map them. They default to Bootstrap's values.
 - **Assistant (AI) components.** Halo design tokens in `tokens.css` (`--mp-ai-1` … `--mp-ai-6`, `--mp-ai-stops`, `--mp-ai-gradient`, `@property --mp-ai-angle`, accent text, surface, glow strengths with stronger dark-mode values) and a new `ai.css`: `.mp-ai-halo`, `.mp-ai-button`, `.mp-ai-badge`, `.mp-ai-thinking`, `.mp-ai-panel` (streaming caret), `.mp-ai-chat`, `.mp-ai-diff` (Apply / Reject) and `.mp-ai-edge-glow`. Text never sits on the gradient; `prefers-reduced-motion` gives a static gradient with no pulse, and forced-colours mode falls back to plain outlines.
 - **`MpKit.ai`**: `status()`, `explain()`, `ask()` and `config()` call the plugin's `/ai/*` routes (from `@mp-consulting/homebridge-ai-kit`) with a generated `requestId` and stream `ai:chunk` events to `onChunk`; render helpers `renderButton`, `renderBadge`, `renderThinking`, `renderAnswer` (streaming, safe markdown subset), `renderDiff` (LCS line diff), `renderChat` and `edgeGlow`, plus `markdown()` and `diffLines()`. All text is HTML-escaped.
 - **`dist/ai.css`**: tokens + Assistant components without Bootstrap overrides, for apps that do not use the plugin kit (e.g. the Glass UI). `dist/kit.css` still contains everything.
