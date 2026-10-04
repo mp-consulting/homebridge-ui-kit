@@ -20,6 +20,11 @@
   <style>
     .preview-section { margin-bottom: 2.5rem; }
     .preview-row { display: flex; flex-wrap: wrap; gap: 1rem; align-items: center; }
+    /* A device-list row: the answer slot is a full-width flex item below the row. */
+    .preview-device { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 0.5rem 1rem; padding: 0.75rem 1rem; border: 1px solid var(--bs-border-color); border-radius: 0.5rem; }
+    .preview-device-info { flex: 1 1 0; min-width: 0; }
+    .preview-device-answer { flex: 0 0 100%; min-width: 0; }
+    .preview-narrow { max-width: 320px; }
   </style>
 </head>
 <body>
@@ -51,6 +56,21 @@
         <button type="button" class="btn btn-sm btn-primary" id="explainBtn">Explain an error</button>
       </div>
       <div id="answer"></div>
+    </section>
+
+    <section class="preview-section">
+      <p class="mp-label">Answer panel in a list row (full-width slot) and in a narrow column</p>
+      <div class="preview-device mb-3">
+        <div class="preview-device-info">
+          <div class="fw-semibold">Volet Chambre Parentale</div>
+          <div class="small text-body-secondary font-monospace">ID: 1000abcdef</div>
+        </div>
+        <div class="d-flex align-items-center gap-2 flex-shrink-0">
+          <span class="badge bg-secondary">Cloud</span><span class="badge bg-danger">Offline</span>
+        </div>
+        <div class="preview-device-answer" id="rowAnswer"></div>
+      </div>
+      <div class="preview-narrow" id="narrowAnswer"></div>
     </section>
 
     <section class="preview-section">
@@ -129,6 +149,11 @@
       streaming: false,
       text: 'Answers support **bold**, `code`, lists and code blocks.\n\n- One\n- Two',
     });
+
+    var LONG_TITLE = 'Why does Volet Chambre Parentale need attention?';
+    var LONG_TEXT = 'The device is **offline** in the eWeLink cloud.\n\n- Check its power supply\n- Re-pair it in the eWeLink app';
+    MpKit.ai.renderAnswer(document.getElementById('rowAnswer'), { title: LONG_TITLE, streaming: false, text: LONG_TEXT });
+    MpKit.ai.renderAnswer(document.getElementById('narrowAnswer'), { title: LONG_TITLE, streaming: false, text: LONG_TEXT });
 
     MpKit.ai.renderDiff(document.getElementById('diff'), {
       before: { platform: 'Demo', name: 'Demo', pollingInterval: 30, devices: [] },
