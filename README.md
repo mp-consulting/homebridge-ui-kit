@@ -184,8 +184,8 @@ stronger under `[data-bs-theme="dark"]`.
 
 ### `MpKit.ai`
 
-`MpKit.ai` calls the routes that `@mp-consulting/homebridge-ai-kit`'s
-`registerAiRoutes(server)` adds to the plugin's `homebridge-ui/server.js`, through the
+`MpKit.ai` calls the routes that `registerAiRoutes(server)` from `@mp-consulting/homebridge-ai-core/plugin`
+(also re-exported by `@mp-consulting/homebridge-ai-kit`) adds to the plugin's `homebridge-ui/server.js`, through the
 `homebridge` global of `@homebridge/plugin-ui-utils`. Each request gets a generated
 `requestId`; the server's `ai:chunk` / `ai:done` / `ai:error` events for that id are
 forwarded to your callbacks while it runs.
