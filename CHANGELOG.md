@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.0](https://github.com/mp-consulting/homebridge-ui-kit/compare/v1.3.0...v1.4.0) (2026-10-21)
+
+
+### Added
+
+* motion tokens, touch polish and overflow fixes ([#5](https://github.com/mp-consulting/homebridge-ui-kit/issues/5)) ([864f282](https://github.com/mp-consulting/homebridge-ui-kit/commit/864f2820711159e6c3adae496fa424aba7943cc4))
+
 ## [1.3.0] - 2026-10-05
 
 ### Added
