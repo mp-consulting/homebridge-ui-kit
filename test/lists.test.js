@@ -64,6 +64,29 @@ describe('DeviceList.render', () => {
     assert.equal(items.querySelectorAll('.mp-device-card').length, 1);
   });
 
+  test('keeps proper-noun labels, pluralises the count and accepts custom texts', () => {
+    const { document, search, list } = setup({ label: 'HomeKit accessories' });
+    assert.equal(document.querySelector('.mp-device-list-search label').textContent, 'Search HomeKit accessories');
+    search('lamp');
+    assert.equal(list.status(), '1 of 3 HomeKit accessories');
+    const one = setup({ items: DEVICES.slice(0, 1), noun: { one: 'bulb', other: 'bulbs' } });
+    one.search('lamp');
+    assert.equal(one.list.status(), '1 of 1 bulb');
+    const custom = setup({ items: [], loading: true, emptyTitle: 'Nothing paired yet', loadingText: 'Discovering…' });
+    assert.equal(custom.list.status(), 'Discovering…');
+    custom.list.setLoading(false);
+    assert.match(custom.document.querySelector('.mp-device-list-items').textContent, /Nothing paired yet/);
+    assert.equal(custom.list.status(), 'Nothing paired yet');
+  });
+
+  test('default cards carry the full name and subtitle in a title', () => {
+    const { document } = setup();
+    const name = document.querySelector('.mp-device-card-name');
+    assert.equal(name.getAttribute('title'), 'Kitchen Lamp');
+    assert.equal(document.querySelector('.mp-device-card-subtitle').getAttribute('title'), '192.168.1.40');
+    assert.equal(document.querySelectorAll('.mp-device-card-name')[2].getAttribute('title'), XSS);
+  });
+
   test('onActivate makes cards buttons activated by click, Enter and Space', () => {
     const activated = [];
     const { document, window } = setup({ onActivate: (item, i) => activated.push([item.id, i]) });

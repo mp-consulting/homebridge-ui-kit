@@ -26,3 +26,38 @@
 .btn-outline-secondary {
   --bs-btn-color: var(--mp-text-subtle);
 }
+
+/* Touch: no grey tap flash (focus-visible rings still show), and no
+   double-tap-to-zoom delay on buttons and tabs. */
+html {
+  -webkit-tap-highlight-color: transparent;
+}
+
+.btn,
+.nav-link {
+  touch-action: manipulation;
+}
+
+/* Press feedback: Bootstrap's own transition list plus a short scale. */
+.btn {
+  transition:
+    color 0.15s ease-in-out,
+    background-color 0.15s ease-in-out,
+    border-color 0.15s ease-in-out,
+    box-shadow 0.15s ease-in-out,
+    transform 160ms var(--mp-ease-out);
+}
+
+.btn:not(:disabled):active {
+  transform: scale(0.97);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .btn {
+    transition: none;
+  }
+
+  .btn:not(:disabled):active {
+    transform: none;
+  }
+}

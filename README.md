@@ -204,6 +204,7 @@ MpKit.Loading.render('Loading...')
 // aria-label / heading is announced politely. Returns the shown element.
 MpKit.View.show('viewId')
 MpKit.View.show('viewId', { focus: false, announce: 'Custom message' })
+// A switched-to view gets the .mp-view-in entrance ({ animate: false } skips it)
 
 // Accessible tabs for a .mp-tabs nav: roles, aria-selected, roving tabindex,
 // Arrow keys / Home / End (mirrored in RTL). Panels come from data-mp-view
@@ -275,6 +276,8 @@ custom `save(values)`), saving only resets the dirty state and resolves `false`.
 const list = MpKit.DeviceList.render('#devices', {
   loading: true,                         // skeleton cards + aria-busy until setItems()
   label: 'Devices',                      // list name; search label "Search devices"
+  // noun: { one: 'device', other: 'devices' }, // count text "1 of 3 devices" (Intl.PluralRules)
+  // emptyTitle: 'Nothing paired yet', loadingText: 'Discovering…',
   empty: { title: 'No devices found', hint: 'Click Discover to scan your network' },
   onActivate: (device, index) => openDevice(device), // cards become role="button" (Enter/Space)
   // renderItem: (device) => `<div class="card mp-device-card" role="button" tabindex="0">…</div>`,
@@ -294,7 +297,10 @@ MpKit.stripAnsi(text);
 ```
 
 Default device cards show `name` (or `displayName`), `subtitle`, `iconClass` and a `status` badge
-(`online` / `offline` / `checking` / `disabled`). Any `.mp-device-card[role="button"]` on the page —
+(`online` / `offline` / `checking` / `disabled`); the name wraps to two lines and the full name and
+subtitle are in a `title`. Labels such as `HomeKit accessories` keep their casing in running text
+(only plain capitalised words are lower-cased). Only interactive cards (`role="button"`, links,
+buttons) get the pointer cursor, hover lift and press feedback. Any `.mp-device-card[role="button"]` on the page —
 yours included — is activated by Enter and Space. The log's live region is off by default
 (a busy log would flood screen readers); pass `live: 'polite'` for low-volume logs.
 
@@ -328,6 +334,20 @@ wizard.next(); wizard.prev(); wizard.go(2);
 
 All text passed to the helpers is HTML-escaped, so it is safe to pass device names or other
 values that came from the network. To include markup, build the element yourself.
+
+### Motion and layout utilities
+
+Motion tokens (`src/tokens.css`): `--mp-ease-out` (entrances, press feedback),
+`--mp-ease-in-out` (things moving on screen), `--mp-ease-drawer` (sheets and panels),
+`--mp-duration-fast` (150ms, exits and small changes) and `--mp-duration` (200ms).
+
+- `.mp-view-in` — 200ms fade-and-rise entrance for a view or step that just appeared
+  (`View.show()` and `Steps` add it; opacity only under `prefers-reduced-motion`).
+- `.mp-text-col` — a flex child that takes the free space, may shrink and wraps long words.
+- `.min-w-0` — `min-width: 0` (Bootstrap 5 has no such utility).
+- Buttons (`.btn`, `.mp-ai-button`) scale slightly while pressed; hover effects only apply on
+  devices with a fine pointer; `.btn` / `.nav-link` have `touch-action: manipulation` and the page
+  has no tap highlight. Every animation has a reduced-motion variant (none, or opacity only).
 
 ### Accessibility and RTL
 
