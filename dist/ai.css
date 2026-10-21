@@ -45,6 +45,14 @@
   --mp-radius: 0.5rem;
   --mp-shadow-hover: 0 0.5rem 1rem rgba(0, 0, 0, 0.12);
 
+  /* Motion. ease-out for things entering or responding to a press,
+     ease-in-out for things moving on screen, drawer for sheets/panels. */
+  --mp-ease-out: cubic-bezier(0.23, 1, 0.32, 1);
+  --mp-ease-in-out: cubic-bezier(0.77, 0, 0.175, 1);
+  --mp-ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
+  --mp-duration-fast: 150ms;
+  --mp-duration: 200ms;
+
   /* Assistant (AI) halo palette. Only ever used for borders, glows and
      decorative dots: text never sits on the gradient. */
   --mp-ai-1: #BC82F3;
@@ -159,6 +167,12 @@
   50% { transform: scale(1.1); opacity: 1; }
 }
 
+/* Reduced-motion stand-in for the orb: opacity only, no scale. */
+@keyframes mp-ai-orb-fade {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
 @keyframes mp-ai-blink {
   50% { opacity: 0; }
 }
@@ -219,9 +233,14 @@
   border-radius: var(--mp-radius, 0.5rem);
 }
 
-.mp-ai-halo::before,
-.mp-ai-halo::after {
+/* Only the 2px ring rotates. Rotating the blurred glow would repaint (and
+   re-blur) it every frame for as long as the halo is on screen. */
+.mp-ai-halo::before {
   animation: mp-ai-spin var(--mp-ai-duration) linear infinite;
+}
+
+.mp-ai-halo::after {
+  animation: none;
 }
 
 /* ── Badge ──────────────────────────────────────────────── */
@@ -265,25 +284,45 @@
   line-height: 1.5;
   text-decoration: none;
   cursor: pointer;
+  transition: transform 160ms var(--mp-ease-out);
+}
+
+.mp-ai-button:not(:disabled):active {
+  transform: scale(0.97);
 }
 
 .mp-ai-button::after {
   opacity: 0;
 }
 
-.mp-ai-button:hover::before,
-.mp-ai-button:hover::after,
+/* The ring always carries a paused rotation and only resumes it, so leaving
+   the button stops it where it is instead of snapping back to 0deg. */
+.mp-ai-button::before,
+.mp-ai-button::after {
+  animation: mp-ai-spin var(--mp-ai-duration) linear infinite paused;
+}
+
 .mp-ai-button:focus-visible::before,
 .mp-ai-button:focus-visible::after,
 .mp-ai-button[aria-busy="true"]::before,
 .mp-ai-button[aria-busy="true"]::after {
-  animation: mp-ai-spin var(--mp-ai-duration) linear infinite;
+  animation-play-state: running;
 }
 
-.mp-ai-button:hover::after,
 .mp-ai-button:focus-visible::after,
 .mp-ai-button[aria-busy="true"]::after {
   opacity: var(--mp-ai-glow-opacity);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mp-ai-button:hover::before,
+  .mp-ai-button:hover::after {
+    animation-play-state: running;
+  }
+
+  .mp-ai-button:hover::after {
+    opacity: var(--mp-ai-glow-opacity);
+  }
 }
 
 .mp-ai-button:focus-visible {
@@ -561,6 +600,13 @@
   font-size: 0.9rem;
 }
 
+/* 16px on touch screens, or iOS Safari zooms the page on focus. */
+@media (pointer: coarse) {
+  .mp-ai-chat-input {
+    font-size: 1rem;
+  }
+}
+
 .mp-ai-chat-input:focus {
   outline: 2px solid var(--mp-ai-text);
   outline-offset: 1px;
@@ -630,9 +676,15 @@
   line-height: 1.55;
 }
 
-.mp-ai-diff-line {
+/* The code block is as wide as the longest line, so every line's background
+   spans the full scroll width (not just its own text). */
+.mp-ai-diff-body > code {
   display: block;
   min-width: max-content;
+}
+
+.mp-ai-diff-line {
+  display: block;
   padding-inline-end: 0.75rem;
   white-space: pre;
 }
@@ -662,6 +714,7 @@
 
 .mp-ai-diff-actions {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: flex-end;
   gap: 0.5rem;
@@ -692,8 +745,10 @@
   cursor: pointer;
 }
 
-.mp-ai-action:hover {
-  background: var(--mp-surface, rgba(0, 0, 0, 0.04));
+@media (hover: hover) and (pointer: fine) {
+  .mp-ai-action:hover {
+    background: var(--mp-surface, rgba(0, 0, 0, 0.04));
+  }
 }
 
 .mp-ai-action-primary {
@@ -702,9 +757,11 @@
   color: #fff;
 }
 
-.mp-ai-action-primary:hover {
-  border-color: var(--mp-primary-hover, #4338ca);
-  background: var(--mp-primary-hover, #4338ca);
+@media (hover: hover) and (pointer: fine) {
+  .mp-ai-action-primary:hover {
+    border-color: var(--mp-primary-hover, #4338ca);
+    background: var(--mp-primary-hover, #4338ca);
+  }
 }
 
 .mp-ai-action:focus-visible {
@@ -738,11 +795,12 @@
   position: absolute;
   inset: 0;
   background: conic-gradient(from var(--mp-ai-angle) at 50% 50%, var(--mp-ai-stops));
-  animation: mp-ai-spin var(--mp-ai-duration) linear infinite;
 }
 
-/* Crisp 3px line along the edges */
+/* Crisp 3px line along the edges; only this line rotates (the soft glow is a
+   full-viewport layer that would repaint every frame). */
 .mp-ai-edge-glow::before {
+  animation: mp-ai-spin var(--mp-ai-duration) linear infinite;
   padding: 3px;
   -webkit-mask:
     linear-gradient(#000 0 0) content-box,
@@ -782,7 +840,7 @@
   border: 0 !important;
 }
 
-/* ── Reduced motion: static gradient, no pulse ──────────── */
+/* ── Reduced motion: static gradient; "thinking" only pulses ── */
 
 @media (prefers-reduced-motion: reduce) {
   .mp-ai-halo::before,
@@ -791,8 +849,6 @@
   .mp-ai-button::after,
   .mp-ai-panel::before,
   .mp-ai-panel::after,
-  .mp-ai-thinking::before,
-  .mp-ai-thinking::after,
   .mp-ai-edge-glow,
   .mp-ai-edge-glow::before,
   .mp-ai-edge-glow::after,
@@ -800,8 +856,22 @@
     animation: none !important;
   }
 
+  /* Keep the thinking indicator, as an opacity change only. */
+  .mp-ai-thinking:is(.mp-ai-halo, .mp-ai-button, .mp-ai-panel)::after {
+    animation: mp-ai-glow-pulse 1.6s ease-in-out infinite !important;
+  }
+
+  .mp-ai-thinking:not(.mp-ai-halo, .mp-ai-button, .mp-ai-badge, .mp-ai-panel)::before {
+    animation: mp-ai-orb-fade 1.4s ease-in-out infinite;
+  }
+
+  .mp-ai-button,
   .mp-ai-button::after {
     transition: none;
+  }
+
+  .mp-ai-button:not(:disabled):active {
+    transform: none;
   }
 }
 

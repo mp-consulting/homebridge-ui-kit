@@ -54,11 +54,30 @@ function show(type, message, opts) {
   let closed = false;
   const duration = opts.duration === undefined ? DURATION[type] : Number(opts.duration) || 0;
 
+  // Plays the .is-leaving exit transition, then removes the toast. Removal is
+  // immediate when there is no transition (reduced motion, kit.css not loaded).
   function close() {
     if (closed) { return; }
     closed = true;
     clearTimeout(timer);
-    el.remove();
+    const win = d.defaultView;
+    const reduce = !!(win && typeof win.matchMedia === 'function'
+      && win.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    el.classList.add('is-leaving');
+    const seconds = reduce || !win || typeof win.getComputedStyle !== 'function' ? 0
+      : Math.max(0, ...String(win.getComputedStyle(el).transitionDuration || '0s').split(',')
+        .map(v => (parseFloat(v) || 0) * (/ms\s*$/.test(v) ? 0.001 : 1)));
+    if (!seconds) { el.remove(); return; }
+    let fallback = null;
+    const done = () => {
+      clearTimeout(fallback);
+      el.removeEventListener('transitionend', onEnd);
+      el.remove();
+    };
+    const onEnd = ev => { if (ev.target === el) { done(); } };
+    el.addEventListener('transitionend', onEnd);
+    // transitionend never fires if the toast is hidden or the transition is cancelled.
+    fallback = setTimeout(done, seconds * 1000 + 50);
   }
   function arm() {
     clearTimeout(timer);

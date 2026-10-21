@@ -68,14 +68,26 @@
 
 /* ── Device card ────────────────────────────────────────── */
 
+/* Only an interactive card (role="button", a link or a button) looks and
+   moves like one; a plain card is static. */
 .mp-device-card {
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-  cursor: pointer;
+  cursor: default;
 }
 
-.mp-device-card:hover {
-  transform: translateY(-1px);
-  box-shadow: var(--mp-shadow-hover) !important;
+.mp-device-card:is([role="button"], [href], button) {
+  cursor: pointer;
+  transition: transform 160ms var(--mp-ease-out), box-shadow 160ms ease;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  .mp-device-card:is([role="button"], [href], button):hover {
+    transform: translateY(-1px);
+    box-shadow: var(--mp-shadow-hover) !important;
+  }
+}
+
+.mp-device-card:is([role="button"], [href], button):active {
+  transform: scale(0.99);
 }
 
 .mp-device-card:focus-visible {
@@ -102,11 +114,15 @@
   min-width: 0;
 }
 
+/* Up to two lines (full name in the title attribute); long unbroken names
+   wrap instead of overflowing. */
 .mp-device-card-name {
-  font-weight: 600;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
+  font-weight: 600;
 }
 
 .mp-device-card-subtitle {
@@ -117,14 +133,26 @@
   white-space: nowrap;
 }
 
+/* The status badge may shrink (ellipsis) instead of squeezing the name. */
+.mp-device-card-body > .badge {
+  flex-shrink: 1;
+  min-width: 0;
+  max-width: 50%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 /* ── Device list ────────────────────────────────────────── */
 
 .mp-device-list-search {
   margin-bottom: 0.75rem;
 }
 
+/* minmax(0, 1fr): an implicit auto track would grow to the widest card's
+   min-content (a long unbroken subtitle) and push the page sideways. */
 .mp-device-list-items {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
   gap: 0.5rem;
 }
 
@@ -144,7 +172,7 @@
   border-radius: 0.25rem;
   background: linear-gradient(90deg, var(--mp-skeleton-base) 25%, var(--mp-skeleton-shine) 50%, var(--mp-skeleton-base) 75%);
   background-size: 200% 100%;
-  animation: mp-shimmer 1.4s ease-in-out infinite;
+  animation: mp-shimmer 1.4s linear infinite;
 }
 
 .mp-skeleton-text {
@@ -240,8 +268,10 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
+  max-width: 100%;
   padding: 3rem 1.5rem;
   text-align: center;
+  overflow-wrap: anywhere;
 }
 
 .mp-empty-state-icon {
@@ -280,8 +310,19 @@
 
 /* ── Nav tabs ───────────────────────────────────────────── */
 
+/* One row that scrolls sideways when the tabs do not fit (no scrollbar).
+   The base line is an inset shadow rather than a border: it is painted under
+   the tabs, so the active tab's 2px line covers it, and a scroll container
+   would clip a tab pulled over a real border with a negative margin. */
 .mp-tabs {
-  border-bottom: 1px solid var(--mp-border);
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  box-shadow: inset 0 -1px 0 var(--mp-border);
+}
+
+.mp-tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .mp-tabs .nav-link {
@@ -290,11 +331,14 @@
   border-bottom: 2px solid transparent; /* reserve space so the active tab doesn't shift */
   padding: 0.75rem 1.25rem;
   font-weight: 500;
+  white-space: nowrap;
 }
 
-.mp-tabs .nav-link:hover {
-  color: var(--bs-body-color);
-  border-color: transparent;
+@media (hover: hover) and (pointer: fine) {
+  .mp-tabs .nav-link:hover {
+    color: var(--bs-body-color);
+    border-color: transparent;
+  }
 }
 
 .mp-tabs .nav-link.active,
@@ -329,10 +373,35 @@
   display: block;
 }
 
+/* Entrance for a view or wizard step that just became visible (View.show()
+   and Steps add it when switching). */
+.mp-view-in {
+  animation: mp-view-in var(--mp-duration) var(--mp-ease-out);
+}
+
+@keyframes mp-view-in {
+  from { opacity: 0; transform: translateY(6px); }
+}
+
 /* View.show() moves focus to the view's heading (tabindex="-1"); a
    programmatic focus target needs no ring. */
 .mp-focus-target:focus:not(:focus-visible) {
   outline: none;
+}
+
+/* ── Layout utilities ───────────────────────────────────── */
+
+/* A text column in a flex row: takes the free space, may shrink below its
+   content and wraps long words instead of pushing siblings out. */
+.mp-text-col {
+  flex: 1 1 auto;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* Bootstrap 5 has no min-width utility; flex/grid children need it to shrink. */
+.min-w-0 {
+  min-width: 0;
 }
 
 /* ── Screen-reader only ─────────────────────────────────── */
@@ -373,8 +442,10 @@
   transition: color 0.15s ease;
 }
 
-.mp-footer a:hover {
-  color: var(--mp-primary-text);
+@media (hover: hover) and (pointer: fine) {
+  .mp-footer a:hover {
+    color: var(--mp-primary-text);
+  }
 }
 
 .mp-footer-icon {
@@ -402,6 +473,11 @@
 
 .mp-secret-input {
   font-family: var(--bs-font-monospace, ui-monospace, SFMono-Regular, Menlo, Consolas, monospace);
+}
+
+/* Room for "Copied" so the label swap does not shift the layout */
+.mp-copy-btn {
+  min-width: 6.5em;
 }
 
 .mp-copy-btn.is-copied {
@@ -621,7 +697,7 @@
 .mp-step + .mp-step::before {
   content: '';
   position: absolute;
-  inset-block-start: 0.875rem;
+  inset-block-start: calc(0.875rem - 1px); /* centred on the 1.75rem marker */
   inset-inline-end: calc(50% + 1.125rem);
   width: calc(100% - 2.25rem + 0.5rem);
   height: 2px;
@@ -705,7 +781,28 @@
   box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
   font-size: 0.875rem;
   pointer-events: auto;
-  animation: mp-toast-in 0.2s ease-out;
+  transition:
+    opacity var(--mp-duration) var(--mp-ease-out),
+    transform var(--mp-duration) var(--mp-ease-out);
+}
+
+/* Entrance: a transition from these values when the toast is inserted, so a
+   toast added while another leaves never restarts a keyframe. */
+@starting-style {
+  .mp-toast {
+    opacity: 0;
+    transform: translateY(0.5rem);
+  }
+}
+
+/* Exit: Toast.close() adds this and removes the element on transitionend. */
+.mp-toast.is-leaving {
+  opacity: 0;
+  transform: translateY(0.25rem);
+  pointer-events: none;
+  transition:
+    opacity var(--mp-duration-fast) ease-out,
+    transform var(--mp-duration-fast) ease-out;
 }
 
 .mp-toast-success { --mp-toast-accent: var(--bs-success, #198754); }
@@ -749,7 +846,12 @@
 
 .mp-toast-close,
 .mp-icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   flex: none;
+  min-width: 1.75rem;
+  min-height: 1.75rem;
   padding: 0 0.25rem;
   border: 0;
   border-radius: 0.25rem;
@@ -760,18 +862,16 @@
   cursor: pointer;
 }
 
-.mp-toast-close:hover {
-  color: var(--bs-body-color, #212529);
+@media (hover: hover) and (pointer: fine) {
+  .mp-toast-close:hover {
+    color: var(--bs-body-color, #212529);
+  }
 }
 
 .mp-toast-close:focus-visible,
 .mp-icon-button:focus-visible {
   outline: 2px solid var(--mp-focus-ring);
   outline-offset: 1px;
-}
-
-@keyframes mp-toast-in {
-  from { opacity: 0; transform: translateY(0.5rem); }
 }
 
 /* ── Confirm dialog ─────────────────────────────────────── */
@@ -785,7 +885,7 @@
   justify-content: center;
   padding: 1rem;
   background: rgba(0, 0, 0, 0.5);
-  animation: mp-fade-in 0.15s ease-out;
+  animation: mp-fade-in var(--mp-duration-fast) ease-out;
 }
 
 .mp-dialog {
@@ -796,6 +896,8 @@
   background: var(--bs-body-bg, #fff);
   color: var(--bs-body-color, #212529);
   box-shadow: 0 1rem 3rem rgba(0, 0, 0, 0.3);
+  overflow-wrap: anywhere;
+  animation: mp-dialog-in var(--mp-duration) var(--mp-ease-out);
 }
 
 .mp-dialog-title {
@@ -825,23 +927,47 @@
   from { opacity: 0; }
 }
 
+@keyframes mp-dialog-in {
+  from { opacity: 0; transform: scale(0.96); }
+}
+
+/* ── Forced colours: box-shadow lines vanish ────────────── */
+
+@media (forced-colors: active) {
+  .mp-tabs {
+    border-bottom: 1px solid CanvasText;
+  }
+}
+
 /* ── Reduced motion ─────────────────────────────────────── */
 
+/* Nothing moves; activity indicators and entrances keep an opacity change. */
 @media (prefers-reduced-motion: reduce) {
   .mp-skeleton,
-  .mp-auth-card.is-polling .mp-auth-status-icon,
-  .mp-status-checking,
-  .mp-toast,
   .mp-dialog-backdrop {
     animation: none;
   }
 
-  .mp-device-card,
-  .mp-footer a {
+  /* The polling spinner pulses instead of rotating; the checking dot keeps its
+     (opacity-only) pulse. */
+  .mp-auth-card.is-polling .mp-auth-status-icon {
+    animation: mp-pulse 1.5s ease-in-out infinite;
+  }
+
+  .mp-dialog,
+  .mp-view-in {
+    animation-name: mp-fade-in;
+  }
+
+  .mp-device-card:is([role="button"], [href], button),
+  .mp-footer a,
+  .mp-toast,
+  .mp-toast.is-leaving {
     transition: none;
   }
 
-  .mp-device-card:hover {
+  .mp-device-card:is([role="button"], [href], button):hover,
+  .mp-device-card:is([role="button"], [href], button):active {
     transform: none;
   }
 }

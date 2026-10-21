@@ -34,9 +34,27 @@ function defaultItem(item, index, interactive) {
   return '<div class="card mp-device-card"' + (interactive ? ' role="button" tabindex="0"' : '') + '>'
     + '<div class="card-body mp-device-card-body">'
     + (item.iconClass ? '<i class="' + escapeHtml(item.iconClass) + ' mp-device-card-icon" aria-hidden="true"></i>' : '')
-    + '<div class="mp-device-card-text"><div class="mp-device-card-name">' + escapeHtml(name) + '</div>'
-    + (item.subtitle ? '<div class="mp-device-card-subtitle">' + escapeHtml(item.subtitle) + '</div>' : '')
+    + '<div class="mp-device-card-text"><div class="mp-device-card-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + '</div>'
+    + (item.subtitle ? '<div class="mp-device-card-subtitle" title="' + escapeHtml(item.subtitle) + '">' + escapeHtml(item.subtitle) + '</div>' : '')
     + '</div>' + status + '</div></div>';
+}
+
+// Lower-cases a label for use mid-sentence, word by word, but only words that
+// are plain capitalised words: 'Devices' → 'devices', while 'HomeKit' or 'TV'
+// keep their casing ('HomeKit accessories', 'TV inputs').
+function midSentence(text) {
+  return String(text).replace(/\S+/g, w => (/^\p{Lu}\p{Ll}*$/u.test(w) ? w.toLowerCase() : w));
+}
+
+// Picks the plural form of `noun` ({ one, few, many, other, … } or a string)
+// for count with Intl.PluralRules, falling back to `other`.
+function plural(noun, count, locale) {
+  if (typeof noun === 'string') { return noun; }
+  let key = 'other';
+  try {
+    if (typeof Intl !== 'undefined' && Intl.PluralRules) { key = new Intl.PluralRules(locale || undefined).select(count); }
+  } catch (e) { /* unsupported locale: keep 'other' */ }
+  return noun[key] || noun.other || '';
 }
 
 function defaultFilter(keys) {
@@ -55,7 +73,12 @@ export const DeviceList = {
    *   search = true | { placeholder, label }, keys = ['name', 'subtitle', 'id'],
    *   filter(item, query), onActivate(item, index, event),
    *   empty: { iconClass, title, hint }, noResults: { title, hint },
-   *   skeletonCount = 3 }
+   *   skeletonCount = 3,
+   *   noun: 'devices' | { one: 'device', other: 'devices' } (pluralised with
+   *     Intl.PluralRules in the search result count; default: the label in
+   *     sentence case),
+   *   emptyTitle (default 'No <noun> found'), loadingText (default 'Loading <noun>…'),
+   *   locale (for the plural rules; default <html lang>) }
    * With onActivate the default cards are role="button" (Enter / Space work).
    * Returns { setItems(items), setLoading(bool), setQuery(q), items(), visible(), destroy() }.
    */
@@ -63,6 +86,10 @@ export const DeviceList = {
     opts = opts || {};
     el = toElement(el);
     const label = opts.label || 'Devices';
+    const noun = opts.noun || { other: midSentence(label) };
+    const locale = opts.locale || (el && el.ownerDocument && el.ownerDocument.documentElement.lang) || undefined;
+    const nounFor = count => plural(noun, count, locale);
+    const nouns = typeof noun === 'string' ? noun : (noun.other || midSentence(label));
     const searchOpts = opts.search === false ? null : (typeof opts.search === 'object' ? opts.search : {});
     const searchId = uid('mp-device-search');
     const filter = typeof opts.filter === 'function' ? opts.filter : defaultFilter(opts.keys || ['name', 'displayName', 'subtitle', 'id']);
@@ -74,7 +101,7 @@ export const DeviceList = {
 
     el.innerHTML = '<div class="mp-device-list">'
       + (searchOpts ? '<div class="mp-device-list-search">'
-        + '<label class="mp-sr-only" for="' + searchId + '">' + escapeHtml(searchOpts.label || 'Search ' + label.toLowerCase()) + '</label>'
+        + '<label class="mp-sr-only" for="' + searchId + '">' + escapeHtml(searchOpts.label || 'Search ' + nouns) + '</label>'
         + '<input type="search" class="form-control" id="' + searchId + '" autocomplete="off" placeholder="'
         + escapeHtml(searchOpts.placeholder || 'Search…') + '">'
         + '</div>' : '')
@@ -100,14 +127,15 @@ export const DeviceList = {
             + Skeleton.render({ lines: 2, avatar: true }) + '</div></div>';
         }
         list.innerHTML = html;
-        announce('Loading ' + label.toLowerCase() + '…');
+        announce(opts.loadingText || 'Loading ' + nouns + '…');
         visible = [];
         return;
       }
       visible = query ? items.filter(item => filter(item, query)) : items.slice();
       if (!items.length) {
-        list.innerHTML = '<div role="listitem">' + EmptyState.render(Object.assign({ title: 'No ' + label.toLowerCase() + ' found' }, opts.empty)) + '</div>';
-        announce('No ' + label.toLowerCase());
+        const emptyTitle = opts.emptyTitle || 'No ' + nounFor(0) + ' found';
+        list.innerHTML = '<div role="listitem">' + EmptyState.render(Object.assign({ title: emptyTitle }, opts.empty)) + '</div>';
+        announce(opts.emptyTitle || 'No ' + nounFor(0));
         return;
       }
       if (!visible.length) {
@@ -125,7 +153,7 @@ export const DeviceList = {
         const html = typeof opts.renderItem === 'function' ? opts.renderItem(item, index) : defaultItem(item, index, interactive);
         return '<div role="listitem" class="mp-device-list-item" data-mp-index="' + index + '">' + html + '</div>';
       }).join('');
-      announce(query ? visible.length + ' of ' + items.length + ' ' + label.toLowerCase() : '');
+      announce(query ? visible.length + ' of ' + items.length + ' ' + nounFor(items.length) : '');
     }
 
     function onInput() {
