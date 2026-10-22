@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        node-version: [20.x, 22.x, 24.x]
+        node-version: [22.x, 24.x, 26.x]
 
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -57,7 +57,7 @@ jobs:
     # The same image the linux baselines were made with: fonts and Chromium
     # match exactly. Keep its tag in step with @playwright/test.
     container:
-      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      image: mcr.microsoft.com/playwright:v1.64.1-noble
       options: --ipc=host
 
     steps:
@@ -79,7 +79,7 @@ jobs:
       # Baselines are per platform (e2e/__screenshots__/<platform>/). To update
       # the linux ones, run the same image locally:
       #   docker run --rm --ipc=host -v "$PWD":/work -w /work -v /work/node_modules \
-      #     mcr.microsoft.com/playwright:v1.63.0-noble \
+      #     mcr.microsoft.com/playwright:v1.64.1-noble \
       #     bash -lc "npm ci && npm run build && npm run examples && npx playwright test --update-snapshots"
       - name: Playwright (screenshots, axe-core, keyboard)
         run: npx playwright test
