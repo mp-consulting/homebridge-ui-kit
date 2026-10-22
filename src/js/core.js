@@ -89,8 +89,10 @@ const HEADING = 'h1, h2, h3, h4, h5, h6, [data-mp-focus]';
  * from another view, focus moves to the new view's heading (or its
  * [data-mp-focus] element, or the view itself) and its name is announced
  * through a polite live region. The first show (no view was active) does
- * neither, so page load does not steal focus.
- * opts: { focus, announce (true/false, or a custom message for announce) }
+ * neither, so page load does not steal focus. A switched-to view also gets
+ * .mp-view-in (a short entrance; opacity only under reduced motion).
+ * opts: { focus, announce (true/false, or a custom message for announce),
+ *   animate (default true) }
  */
 export const View = {
   show(id, opts) {
@@ -110,6 +112,9 @@ export const View = {
       v.classList.toggle('active', active);
     });
     if (!shown || !changed || typeof shown.querySelector !== 'function') { return shown; }
+    // Only when switching: the first view on page load appears without motion.
+    // Going from display:none to block restarts the animation on every switch.
+    if (previous && opts.animate !== false) { shown.classList.add('mp-view-in'); }
     const heading = shown.querySelector(HEADING);
     if (opts.focus === undefined ? previous : opts.focus) { focusElement(heading || shown); }
     if (opts.announce === undefined ? previous : opts.announce) {

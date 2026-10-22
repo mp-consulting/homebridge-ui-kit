@@ -45,6 +45,16 @@ describe('View.show focus and announcements', () => {
     assert.equal(document.activeElement, document.body);
   });
 
+  test('a switched-to view gets the .mp-view-in entrance; the first show does not', () => {
+    const { MpKit, document } = loadDom({ html: html.replace('mp-view active', 'mp-view') });
+    MpKit.View.show('list');
+    assert.equal(document.getElementById('list').classList.contains('mp-view-in'), false);
+    MpKit.View.show('settings');
+    assert.ok(document.getElementById('settings').classList.contains('mp-view-in'));
+    MpKit.View.show('bare', { animate: false });
+    assert.equal(document.getElementById('bare').classList.contains('mp-view-in'), false);
+  });
+
   test('focus and announce can be turned off or customised', async () => {
     const { MpKit, document } = loadDom({ html });
     MpKit.View.show('settings', { focus: false, announce: 'Now editing settings' });

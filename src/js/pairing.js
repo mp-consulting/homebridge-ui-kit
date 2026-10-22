@@ -205,7 +205,8 @@ export const Steps = {
   /**
    * Renders an .mp-steps progress list into el and shows one panel at a time.
    * opts: { steps: [{ title, panel (selector/element) }], current = 0,
-   *   label = 'Progress', onChange(index, step), focus = true }
+   *   label = 'Progress', onChange(index, step), focus = true,
+   *   animate = true (the newly shown panel gets .mp-view-in) }
    * Returns { go(index), next(), prev(), current(), destroy() }.
    */
   create(el, opts) {
@@ -236,6 +237,7 @@ export const Steps = {
       });
       if (!initial) {
         const panel = toElement(steps[index].panel);
+        if (panel && opts.animate !== false) { panel.classList.add('mp-view-in'); }
         if (panel && opts.focus !== false) {
           focusElement(panel.querySelector('h1, h2, h3, h4, h5, h6, [data-mp-focus]') || panel);
         }

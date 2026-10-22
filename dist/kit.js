@@ -1,4 +1,4 @@
-/* @mp-consulting/homebridge-ui-kit v1.3.0
+/* @mp-consulting/homebridge-ui-kit v1.4.0
    Brand design system for Homebridge plugins
    https://github.com/mp-consulting/homebridge-ui-kit */
 (() => {
@@ -158,6 +158,9 @@
       });
       if (!shown || !changed || typeof shown.querySelector !== "function") {
         return shown;
+      }
+      if (previous && opts.animate !== false) {
+        shown.classList.add("mp-view-in");
       }
       const heading = shown.querySelector(HEADING);
       if (opts.focus === void 0 ? previous : opts.focus) {
@@ -1204,7 +1207,27 @@
       }
       closed = true;
       clearTimeout(timer);
-      el.remove();
+      const win = d.defaultView;
+      const reduce = !!(win && typeof win.matchMedia === "function" && win.matchMedia("(prefers-reduced-motion: reduce)").matches);
+      el.classList.add("is-leaving");
+      const seconds = reduce || !win || typeof win.getComputedStyle !== "function" ? 0 : Math.max(0, ...String(win.getComputedStyle(el).transitionDuration || "0s").split(",").map((v) => (parseFloat(v) || 0) * (/ms\s*$/.test(v) ? 1e-3 : 1)));
+      if (!seconds) {
+        el.remove();
+        return;
+      }
+      let fallback = null;
+      const done = () => {
+        clearTimeout(fallback);
+        el.removeEventListener("transitionend", onEnd);
+        el.remove();
+      };
+      const onEnd = (ev) => {
+        if (ev.target === el) {
+          done();
+        }
+      };
+      el.addEventListener("transitionend", onEnd);
+      fallback = setTimeout(done, seconds * 1e3 + 50);
     }
     function arm() {
       clearTimeout(timer);
@@ -1777,7 +1800,23 @@
   function defaultItem(item, index, interactive) {
     const name = item.name || item.displayName || item.id || "Device " + (index + 1);
     const status = STATUS[item.status] ? STATUS[item.status](item.statusLabel) : "";
-    return '<div class="card mp-device-card"' + (interactive ? ' role="button" tabindex="0"' : "") + '><div class="card-body mp-device-card-body">' + (item.iconClass ? '<i class="' + escapeHtml(item.iconClass) + ' mp-device-card-icon" aria-hidden="true"></i>' : "") + '<div class="mp-device-card-text"><div class="mp-device-card-name">' + escapeHtml(name) + "</div>" + (item.subtitle ? '<div class="mp-device-card-subtitle">' + escapeHtml(item.subtitle) + "</div>" : "") + "</div>" + status + "</div></div>";
+    return '<div class="card mp-device-card"' + (interactive ? ' role="button" tabindex="0"' : "") + '><div class="card-body mp-device-card-body">' + (item.iconClass ? '<i class="' + escapeHtml(item.iconClass) + ' mp-device-card-icon" aria-hidden="true"></i>' : "") + '<div class="mp-device-card-text"><div class="mp-device-card-name" title="' + escapeHtml(name) + '">' + escapeHtml(name) + "</div>" + (item.subtitle ? '<div class="mp-device-card-subtitle" title="' + escapeHtml(item.subtitle) + '">' + escapeHtml(item.subtitle) + "</div>" : "") + "</div>" + status + "</div></div>";
+  }
+  function midSentence(text) {
+    return String(text).replace(/\S+/g, (w) => new RegExp("^\\p{Lu}\\p{Ll}*$", "u").test(w) ? w.toLowerCase() : w);
+  }
+  function plural(noun, count, locale) {
+    if (typeof noun === "string") {
+      return noun;
+    }
+    let key = "other";
+    try {
+      if (typeof Intl !== "undefined" && Intl.PluralRules) {
+        key = new Intl.PluralRules(locale || void 0).select(count);
+      }
+    } catch (e) {
+    }
+    return noun[key] || noun.other || "";
   }
   function defaultFilter(keys) {
     return (item, query) => keys.some((k) => {
@@ -1794,7 +1833,12 @@
      *   search = true | { placeholder, label }, keys = ['name', 'subtitle', 'id'],
      *   filter(item, query), onActivate(item, index, event),
      *   empty: { iconClass, title, hint }, noResults: { title, hint },
-     *   skeletonCount = 3 }
+     *   skeletonCount = 3,
+     *   noun: 'devices' | { one: 'device', other: 'devices' } (pluralised with
+     *     Intl.PluralRules in the search result count; default: the label in
+     *     sentence case),
+     *   emptyTitle (default 'No <noun> found'), loadingText (default 'Loading <noun>…'),
+     *   locale (for the plural rules; default <html lang>) }
      * With onActivate the default cards are role="button" (Enter / Space work).
      * Returns { setItems(items), setLoading(bool), setQuery(q), items(), visible(), destroy() }.
      */
@@ -1802,6 +1846,10 @@
       opts = opts || {};
       el = toElement(el);
       const label = opts.label || "Devices";
+      const noun = opts.noun || { other: midSentence(label) };
+      const locale = opts.locale || el && el.ownerDocument && el.ownerDocument.documentElement.lang || void 0;
+      const nounFor = (count) => plural(noun, count, locale);
+      const nouns = typeof noun === "string" ? noun : noun.other || midSentence(label);
       const searchOpts = opts.search === false ? null : typeof opts.search === "object" ? opts.search : {};
       const searchId = uid("mp-device-search");
       const filter = typeof opts.filter === "function" ? opts.filter : defaultFilter(opts.keys || ["name", "displayName", "subtitle", "id"]);
@@ -1810,7 +1858,7 @@
       let loading = !!opts.loading;
       let query = "";
       let visible = [];
-      el.innerHTML = '<div class="mp-device-list">' + (searchOpts ? '<div class="mp-device-list-search"><label class="mp-sr-only" for="' + searchId + '">' + escapeHtml(searchOpts.label || "Search " + label.toLowerCase()) + '</label><input type="search" class="form-control" id="' + searchId + '" autocomplete="off" placeholder="' + escapeHtml(searchOpts.placeholder || "Search…") + '"></div>' : "") + '<p class="mp-sr-only" role="status" aria-live="polite" aria-atomic="true"></p><div class="mp-device-list-items" role="list" aria-label="' + escapeHtml(label) + '"></div></div>';
+      el.innerHTML = '<div class="mp-device-list">' + (searchOpts ? '<div class="mp-device-list-search"><label class="mp-sr-only" for="' + searchId + '">' + escapeHtml(searchOpts.label || "Search " + nouns) + '</label><input type="search" class="form-control" id="' + searchId + '" autocomplete="off" placeholder="' + escapeHtml(searchOpts.placeholder || "Search…") + '"></div>' : "") + '<p class="mp-sr-only" role="status" aria-live="polite" aria-atomic="true"></p><div class="mp-device-list-items" role="list" aria-label="' + escapeHtml(label) + '"></div></div>';
       const list = el.querySelector(".mp-device-list-items");
       const status = el.querySelector('.mp-device-list [role="status"]');
       const input = searchOpts ? el.querySelector('input[type="search"]') : null;
@@ -1831,14 +1879,15 @@
             html += '<div class="card mp-device-card mp-device-card-skeleton" role="listitem"><div class="card-body">' + Skeleton.render({ lines: 2, avatar: true }) + "</div></div>";
           }
           list.innerHTML = html;
-          announce2("Loading " + label.toLowerCase() + "…");
+          announce2(opts.loadingText || "Loading " + nouns + "…");
           visible = [];
           return;
         }
         visible = query ? items.filter((item) => filter(item, query)) : items.slice();
         if (!items.length) {
-          list.innerHTML = '<div role="listitem">' + EmptyState.render(Object.assign({ title: "No " + label.toLowerCase() + " found" }, opts.empty)) + "</div>";
-          announce2("No " + label.toLowerCase());
+          const emptyTitle = opts.emptyTitle || "No " + nounFor(0) + " found";
+          list.innerHTML = '<div role="listitem">' + EmptyState.render(Object.assign({ title: emptyTitle }, opts.empty)) + "</div>";
+          announce2(opts.emptyTitle || "No " + nounFor(0));
           return;
         }
         if (!visible.length) {
@@ -1856,7 +1905,7 @@
           const html = typeof opts.renderItem === "function" ? opts.renderItem(item, index) : defaultItem(item, index, interactive);
           return '<div role="listitem" class="mp-device-list-item" data-mp-index="' + index + '">' + html + "</div>";
         }).join("");
-        announce2(query ? visible.length + " of " + items.length + " " + label.toLowerCase() : "");
+        announce2(query ? visible.length + " of " + items.length + " " + nounFor(items.length) : "");
       }
       function onInput() {
         query = input.value.trim().toLowerCase();
@@ -2202,7 +2251,8 @@
     /**
      * Renders an .mp-steps progress list into el and shows one panel at a time.
      * opts: { steps: [{ title, panel (selector/element) }], current = 0,
-     *   label = 'Progress', onChange(index, step), focus = true }
+     *   label = 'Progress', onChange(index, step), focus = true,
+     *   animate = true (the newly shown panel gets .mp-view-in) }
      * Returns { go(index), next(), prev(), current(), destroy() }.
      */
     create(el, opts) {
@@ -2230,6 +2280,9 @@
         });
         if (!initial) {
           const panel = toElement(steps[index].panel);
+          if (panel && opts.animate !== false) {
+            panel.classList.add("mp-view-in");
+          }
           if (panel && opts.focus !== false) {
             focusElement(panel.querySelector("h1, h2, h3, h4, h5, h6, [data-mp-focus]") || panel);
           }
@@ -2254,7 +2307,7 @@
   };
 
   // src/js/index.js
-  var version = "1.3.0";
+  var version = "1.4.0";
   var MpKit = {
     version,
     escapeHtml,

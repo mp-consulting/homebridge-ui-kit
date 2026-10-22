@@ -1,4 +1,4 @@
-/* @mp-consulting/homebridge-ui-kit v1.3.0 — TypeScript declarations.
+/* @mp-consulting/homebridge-ui-kit v1.4.0 — TypeScript declarations.
    Classic script (dist/kit.js): `MpKit` is a global (also `window.MpKit`).
    Reference it with:  /// <reference types="@mp-consulting/homebridge-ui-kit/kit.js" />
    or:                 import type {} from '@mp-consulting/homebridge-ui-kit/kit.js';
@@ -28,6 +28,8 @@ export interface ViewShowOptions {
   focus?: boolean;
   /** Announce the view (true/false or a custom message). Default as for focus. */
   announce?: boolean | string;
+  /** Add the .mp-view-in entrance when switching from another view. Default true. */
+  animate?: boolean;
 }
 
 export interface FooterOptions {
@@ -235,6 +237,18 @@ export interface DeviceListOptions<T = DeviceItem> {
   empty?: EmptyStateOptions;
   noResults?: EmptyStateOptions;
   skeletonCount?: number;
+  /**
+   * The items' noun in running text, as a plural string or plural forms
+   * chosen with Intl.PluralRules (e.g. `{ one: 'device', other: 'devices' }`).
+   * Default: the label in sentence case ('HomeKit accessories' stays as is).
+   */
+  noun?: string | { zero?: string; one?: string; two?: string; few?: string; many?: string; other: string };
+  /** Locale for the plural rules. Default: the document's lang. */
+  locale?: string;
+  /** Title of the empty state (and its announcement). Default 'No <noun> found'. */
+  emptyTitle?: string;
+  /** Announced while loading. Default 'Loading <noun>…'. */
+  loadingText?: string;
 }
 
 export interface DeviceListController<T = DeviceItem> {
@@ -327,6 +341,8 @@ export interface StepsOptions {
   current?: number;
   label?: string;
   focus?: boolean;
+  /** Add the .mp-view-in entrance to the newly shown panel. Default true. */
+  animate?: boolean;
   onChange?(index: number, step: StepDefinition): void;
 }
 

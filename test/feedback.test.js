@@ -1,6 +1,6 @@
 import { test, describe } from 'node:test';
 import assert from 'node:assert/strict';
-import { loadDom, tick } from './dom.js';
+import { loadDom, tick, fakeMedia } from './dom.js';
 
 const XSS = '<img src=x onerror=alert(1)>';
 const wait = ms => new Promise(r => setTimeout(r, ms));
@@ -44,6 +44,34 @@ describe('MpKit.Toast', () => {
     await wait(60);
     assert.equal(handle.element.isConnected, false);
     assert.equal(MpKit.Toast.show('bogus', 'x', { duration: 0, local: true }).element.className, 'mp-toast mp-toast-info');
+  });
+
+  test('close plays the .is-leaving transition, then removes the toast', async () => {
+    const { MpKit, window, document } = loadDom();
+    const style = document.createElement('style');
+    style.textContent = '.mp-toast.is-leaving { transition-property: opacity; transition-duration: 40ms; }';
+    document.head.appendChild(style);
+    const handle = MpKit.Toast.info('bye', { duration: 0 });
+    handle.close();
+    assert.ok(handle.element.classList.contains('is-leaving'));
+    assert.equal(handle.element.isConnected, true, 'kept while leaving');
+    handle.element.dispatchEvent(new window.Event('transitionend'));
+    assert.equal(handle.element.isConnected, false);
+    // No transitionend (hidden tab, cancelled transition): the fallback timer removes it.
+    const other = MpKit.Toast.info('later', { duration: 0 });
+    other.close();
+    await wait(150);
+    assert.equal(other.element.isConnected, false);
+  });
+
+  test('close removes the toast at once under reduced motion', () => {
+    const { MpKit, document } = loadDom({ media: fakeMedia(true) });
+    const style = document.createElement('style');
+    style.textContent = '.mp-toast.is-leaving { transition-property: opacity; transition-duration: 40ms; }';
+    document.head.appendChild(style);
+    const handle = MpKit.Toast.info('bye', { duration: 0 });
+    handle.close();
+    assert.equal(handle.element.isConnected, false);
   });
 });
 
