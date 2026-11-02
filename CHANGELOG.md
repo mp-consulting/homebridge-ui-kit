@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.4.1](https://github.com/mp-consulting/homebridge-ui-kit/compare/v1.4.0...v1.4.1) (2026-11-02)
+
+
+### Documentation
+
+* add the MIT licence file ([#9](https://github.com/mp-consulting/homebridge-ui-kit/issues/9)) ([df3b8ca](https://github.com/mp-consulting/homebridge-ui-kit/commit/df3b8ca96d546d914463f6c902f0698271f20d4a))
+
 ## [1.4.0](https://github.com/mp-consulting/homebridge-ui-kit/compare/v1.3.0...v1.4.0) (2026-10-21)
 
 
